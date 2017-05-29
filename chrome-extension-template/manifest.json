@@ -1,0 +1,16 @@
+{
+    "manifest_version": 2,
+    "name": "scrats",
+    "version": "0.1.0",
+    "background": {
+        "scripts": ["init.js"],
+        "persistent": true
+    },
+    "automation": true,
+    "permissions": [
+        "tabs",
+        "automation",
+        "http://*/",
+        "https://*/"
+    ]
+}
