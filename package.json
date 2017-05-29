@@ -1,0 +1,30 @@
+{
+  "name": "scrats",
+  "version": "0.1.0",
+  "description": "Screenreader Acceptance Testing System",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damyon/scrats.git"
+  },
+  "keywords": [
+    "Acceptance",
+    "Testing",
+    "Screen",
+    "Reader",
+    "Accessibility"
+  ],
+  "author": "Damyon Wiese <damyon@moodle.com>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/damyon/scrats/issues"
+  },
+  "homepage": "https://github.com/damyon/scrats#readme"
+}
