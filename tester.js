@@ -1,12 +1,12 @@
 var Promise = require('promise');
 var Tmp = require('tmp');
-var Filesystem = require('fs');
+var Filesystem = require('fs-extra');
 var Rmdir = require('rmdir');
 var spawn = require('child_process').spawn;
 var copy = require('recursive-copy');
 var installDir = require('get-installed-path');
 
-exports.run = function(url, feature, chrome) {
+exports.run = function(url, feature, chrome, verbose) {
     console.log('# Execute test suite: ' + feature + ' on site: ' + url);
 
     var promise = new Promise(function(resolve, reject) {
@@ -30,6 +30,10 @@ exports.run = function(url, feature, chrome) {
               // Copy the files from the extension template to the tmp dir.
               return copy(baseDir + '/chrome-extension-template', extensionDir);
           }).then(function() {
+              // Copy the feature file to feature.js in the extension.
+              return Filesystem.copy(feature, extensionDir + '/feature.js');
+
+          }).then(function() {
               // Launch chrome with the extension.
               var process = spawn(chrome, ['--user-data-dir=' + profileDir, '--load-extension=' + extensionDir, '--no-first-run', '--enable-logging', '--v=0', url]);
 
@@ -40,6 +44,9 @@ exports.run = function(url, feature, chrome) {
 
                   readFile(profileDir + '/chrome_debug.log', 'utf8').then(function(data) {
 
+                    if (verbose > 0) {
+                        console.log(data);
+                    }
                     var lines = data.split("\n").filter(function(element) {
                         return element.match(/[TAP]/);
                     }).map(function(element) {

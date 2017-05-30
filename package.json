@@ -29,6 +29,7 @@
   "homepage": "https://github.com/damyon/scrats#readme",
   "devDependencies": {
     "expect.js": "^0.3.1",
+    "fs-extra": "^3.0.1",
     "get-installed-path": "^2.0.3",
     "mocha": "^3.4.2",
     "promise": "^7.1.1",
