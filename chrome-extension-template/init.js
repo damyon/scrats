@@ -16,6 +16,8 @@ chrome.tabs.onUpdated.addListener(function(tabId, info) {
     if (info.status == "complete") {
         console.log('tab complete');
         chrome.automation.getTree(tabId, function(node) {
+
+            window.reader = new ScreenReader(tabId);
             console.log('tree');
             console.log(node.name);
             console.log(node.role);
