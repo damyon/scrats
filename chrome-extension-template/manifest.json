@@ -3,7 +3,8 @@
     "name": "scrats",
     "version": "0.1.0",
     "background": {
-        "scripts": ["init.js"],
+        "scripts": ["expect.js", "mocha.js", "init.js"],
+        "css": ["mocha.css"],
         "persistent": true
     },
     "automation": true,
