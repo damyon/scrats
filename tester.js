@@ -35,7 +35,7 @@ exports.run = function(url, feature, chrome, verbose) {
 
           }).then(function() {
               // Launch chrome with the extension.
-              var process = spawn(chrome, ['--user-data-dir=' + profileDir, '--load-extension=' + extensionDir, '--no-first-run', '--enable-logging', '--v=0', url]);
+              var process = spawn(chrome, ['--user-data-dir=' + profileDir, '--load-extension=' + extensionDir, '--no-first-run', '--enable-logging', '--v=0', '--force-renderer-accessibility', url]);
 
               // Handle exit.
               process.on('close', function(code, signal) {
