@@ -39,6 +39,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, info) {
             script.onload = function() {
                 var testNo = 1, passed = 0, failed = 0;
                 logTAP('1..' + mocha.suite.total());
+
                 mocha.run()
                     .on('pass', function(test) {
                         logTAP("ok " + (testNo++) + " - " + test.title);

@@ -6,7 +6,9 @@ var spawn = require('child_process').spawn;
 var copy = require('recursive-copy');
 var installDir = require('get-installed-path');
 
-exports.run = function(url, feature, chrome, verbose) {
+var MAX_EXECUTION_TIME = 60000;
+
+exports.run = function(url, feature, chrome, verbose, headless) {
     console.log('# Execute test suite: ' + feature + ' on site: ' + url);
 
     var promise = new Promise(function(resolve, reject) {
@@ -35,7 +37,22 @@ exports.run = function(url, feature, chrome, verbose) {
 
           }).then(function() {
               // Launch chrome with the extension.
-              var process = spawn(chrome, ['--user-data-dir=' + profileDir, '--load-extension=' + extensionDir, '--no-first-run', '--enable-logging', '--v=0', '--force-renderer-accessibility', url]);
+              var args = [
+                '--user-data-dir=' + profileDir,
+                '--load-extension=' + extensionDir,
+                '--no-first-run',
+                '--enable-logging',
+                '--v=0',
+                '--force-renderer-accessibility'
+              ];
+
+              args.push(url);
+              var process = spawn(chrome, args);
+
+              setTimeout(function() {
+                process.kill();
+                console.log('# Execution time exceeded (' + MAX_EXECUTION_TIME/1000 + ' seconds) - killing process.');
+              }, MAX_EXECUTION_TIME);
 
               // Handle exit.
               process.on('close', function(code, signal) {
