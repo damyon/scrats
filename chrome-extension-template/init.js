@@ -9,12 +9,18 @@ var logTAP = function(str) {
 
 };
 
+var mochaStarted = false;
+
 chrome.tabs.onUpdated.addListener(function(tabId, info) {
     console.log('tab updated');
     console.log(tabId);
     console.log(info.status);
     if (info.status == "complete") {
         console.log('tab complete');
+        if (mochaStarted) {
+            return;
+        }
+        mochaStarted = true;
         chrome.automation.getTree(tabId, function(node) {
 
             window.reader = new ScreenReader(tabId);

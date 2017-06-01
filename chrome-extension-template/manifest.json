@@ -22,7 +22,9 @@
         "css": ["mocha.css"],
         "persistent": true
     },
-    "automation": true,
+    "automation": {
+        "interact": true
+    },
     "permissions": [
         "tabs",
         "automation",
