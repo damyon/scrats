@@ -3,12 +3,12 @@ var Tmp = require('tmp');
 var Filesystem = require('fs-extra');
 var Rmdir = require('rmdir');
 var spawn = require('child_process').spawn;
-var copy = require('recursive-copy');
+var copyDir = require('recursive-copy');
 var installDir = require('get-installed-path');
 
 var MAX_EXECUTION_TIME = 60000;
 
-exports.run = function(url, feature, chrome, verbose, headless) {
+exports.run = function(url, feature, chrome, verbose, scripts) {
     console.log('# Execute test suite: ' + feature + ' on site: ' + url);
 
     var promise = new Promise(function(resolve, reject) {
@@ -30,10 +30,17 @@ exports.run = function(url, feature, chrome, verbose, headless) {
             return baseDir;
           }).then(function(baseDir) {
               // Copy the files from the extension template to the tmp dir.
-              return copy(baseDir + '/chrome-extension-template', extensionDir);
+              return copyDir(baseDir + '/chrome-extension-template', extensionDir);
           }).then(function() {
               // Copy the feature file to feature.js in the extension.
               return Filesystem.copy(feature, extensionDir + '/feature.js');
+          }).then(function() {
+              // Copy each preflight script to the extension and append to the manifest.
+              var filesToCopy = [];
+              scripts.forEach((script, index) => {
+                 filesToCopy.push(Filesystem.copy(script, extensionDir + '/preflight' + index + '.js'));
+              });
+              return Promise.all(filesToCopy);
 
           }).then(function() {
               // Launch chrome with the extension.

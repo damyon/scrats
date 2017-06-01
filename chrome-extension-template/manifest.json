@@ -3,7 +3,21 @@
     "name": "scrats",
     "version": "0.1.0",
     "background": {
-        "scripts": ["expect.js", "mocha.js", "screenreader.js", "init.js"],
+        "scripts": [
+            "expect.js",
+            "mocha.js",
+            "screenreader.js",
+            "preflight0.js",
+            "preflight1.js",
+            "preflight2.js",
+            "preflight3.js",
+            "preflight4.js",
+            "preflight5.js",
+            "preflight6.js",
+            "preflight7.js",
+            "preflight8.js",
+            "preflight9.js",
+            "init.js"],
         "css": ["mocha.css"],
         "persistent": true
     },
