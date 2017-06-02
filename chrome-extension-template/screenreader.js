@@ -1,6 +1,27 @@
 (function() {
     var ScreenReader = function(tabId) {
         this.tabId = tabId;
+        this.loadingComplete = () => {};
+        this.loading = new Promise((resolve) => {
+            this.loadingComplete = resolve;
+            // We are initially resolved, because we create ourselves in the tab update completed event listener.
+            this.loadingComplete();
+        });
+
+        chrome.tabs.onUpdated.addListener(function(tabId, info) {
+            if (info.status == "complete") {
+                this.loadingComplete();
+            }
+            if (info.status == "loading") {
+                this.loading = new Promise((resolve) => {
+                    this.loadingComplete = resolve;
+                });
+            }
+        }.bind(this));
+    };
+
+    ScreenReader.prototype.waitForPage = function() {
+        return this.loading;
     };
 
     var NodeWrapper = function(automationNode) {
@@ -15,30 +36,44 @@
         });
     };
 
-    ScreenReader.prototype.getPage = function() {
-        return new Promise(function(resolve, reject) {
-            chrome.automation.getTree(this.tabId, (node) => {
+    ScreenReader.prototype.getPageTitle = function() {
+        return this._getPage().then((page) => {
+            return page.name;
+        });
+    }
 
-                console.log('Page ready: ' + JSON.stringify(node.state));
-                console.log('Page ready: ' + node.docLoaded);
-                console.log('Page ready: ' + node.name);
-                resolve(new NodeWrapper(node));
+    ScreenReader.prototype._getPage = function() {
+        return this.waitForPage().then(() => {
+            return new Promise(function(resolve, reject) {
+                chrome.automation.getTree(this.tabId, (node) => {
+                    resolve(node);
+                });
             });
         });
     };
 
-    ScreenReader.prototype.find = function(node, attributes) {
-        if (node === null || node._node === null) {
+    ScreenReader.prototype.findInPage = async function(attributes) {
+        var page = await this._getPage();
+        
+        if (page === null) {
+            throw Error('page is not available');
+        }
+
+        return new NodeWrapper(page.find({attributes: attributes}));
+    };
+
+    ScreenReader.prototype.find = function(wrapper, attributes) {
+        if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
         }
-        return new NodeWrapper(node._node.find({attributes: attributes}));
+        return new NodeWrapper(wrapper._node.find({attributes: attributes}));
     }
 
-    ScreenReader.prototype.next = function(node, attributes) {
-        if (node === null || node._node === null) {
+    ScreenReader.prototype.next = function(wrapper, attributes) {
+        if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
         }
-        var result = this._next(node._node, attributes, false);
+        var result = this._next(wrapper._node, attributes, false);
         if (result) {
             return new NodeWrapper(result);
         }
@@ -48,9 +83,6 @@
         var result = false;
         if (node === null || typeof node === "undefined") {
             return false;
-        }
-        if (node.name) {
-            console.log(node.name);
         }
         if (node.matches({ "attributes": attributes })) {
             return node;
@@ -73,47 +105,47 @@
     }
 
 
-    ScreenReader.prototype.focus = function(node) {
-        if (node === null || node._node === null) {
+    ScreenReader.prototype.focus = function(wrapper) {
+        if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
         }
-        node._node.focus();
+        wrapper._node.focus();
     }
 
-    ScreenReader.prototype.doDefault = function(node) {
-        if (node === null || node._node === null) {
+    ScreenReader.prototype.doDefault = function(wrapper) {
+        if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
         }
-        node._node.focus();
-        node._node.doDefault();
+        wrapper._node.focus();
+        wrapper._node.doDefault();
 
         return new Promise(function(resolve) {
-            setTimeout(resolve, 1000);
+            setTimeout(resolve, 600);
         });
     }
 
-    ScreenReader.prototype.getAccessibleName = function(node) {
-        if (node === null || node._node === null) {
+    ScreenReader.prototype.getAccessibleName = function(wrapper) {
+        if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
         }
-        return node._node.name;
+        return wrapper._node.name;
     };
 
     ScreenReader.prototype.debugPrintTree = async function() {
-        var page = await this.getPage();
+        var page = await this._getPage();
 
-        console.log(page._node + '');
+        console.log(page + '');
     };
 
-    ScreenReader.prototype.debugPrintNode = function(node) {
+    ScreenReader.prototype.debugPrintNode = function(wrapper) {
         var output = '';
 
-        if (node === null || node._node === null) {
+        if (wrapper === null || wrapper._node === null) {
             console.log('null');
             return;
         }
-        output += ' id=' + node._node.id + ' name=' + node._node.name + ' namefrom=' + node._node.nameFrom;
-        output += ' description=' + node._node.description + ' role=' + node._node.role + ' state=' + JSON.stringify(node._node.state);
+        output += ' id=' + wrapper._node.id + ' name=' + wrapper._node.name + ' namefrom=' + wrapper._node.nameFrom;
+        output += ' description=' + wrapper._node.description + ' role=' + wrapper._node.role + ' state=' + JSON.stringify(wrapper._node.state);
         console.log(output);
     };
 

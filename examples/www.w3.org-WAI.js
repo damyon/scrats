@@ -1,19 +1,18 @@
 describe('World Wide Web search', function() {
   describe('Search page navigation', function() {
     it('The page should have a title', async function() {
-        var page = await reader.getPage();
-
-        expect(reader.getAccessibleName(page)).to.match(/W3C/);
+        var title = await reader.getPageTitle();
+        expect(title).to.match(/W3C/);
     });
 
     it('The search field should have an accessible name', async function() {
-        var page = await reader.getPage();
+        this.timeout(15000);
 
-        var search = reader.find(page, {'name' : /Search/});
+        var search = await reader.findInPage({'name' : /Search/});
         //reader.debugPrintTree();
         reader.debugPrintNode(search);
         expect(reader.getAccessibleName(search)).to.eql('Search');
-        var siteNav = reader.find(page, {'role' : 'heading', 'hierarchicalLevel': 2});
+        var siteNav = await reader.findInPage({'role' : 'heading', 'hierarchicalLevel': 2});
         reader.debugPrintNode(siteNav);
 
         var gettingStartedLink = reader.next(siteNav, {'role' : 'link'});
@@ -21,8 +20,8 @@ describe('World Wide Web search', function() {
 
         var done = await reader.doDefault(gettingStartedLink);
 
-        var page = await reader.getPage();
-        expect(reader.getAccessibleName(page)).to.match(/WAI Resources/);
+        var title = await reader.getPageTitle();
+        expect(title).to.match(/WAI Resources/);
     });
   });
 });

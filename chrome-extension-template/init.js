@@ -1,5 +1,3 @@
-console.log('Hello...');
-
 var logTAP = function(str) {
     var lines = str.split("\n");
     lines.map(function(line) {
@@ -12,11 +10,7 @@ var logTAP = function(str) {
 var mochaStarted = false;
 
 chrome.tabs.onUpdated.addListener(function(tabId, info) {
-    console.log('tab updated');
-    console.log(tabId);
-    console.log(info.status);
     if (info.status == "complete") {
-        console.log('tab complete');
         if (mochaStarted) {
             return;
         }
@@ -24,14 +18,10 @@ chrome.tabs.onUpdated.addListener(function(tabId, info) {
         chrome.automation.getTree(tabId, function(node) {
 
             window.reader = new ScreenReader(tabId);
-            console.log('tree');
-            console.log(node.name);
-            console.log(node.role);
             var page = chrome.extension.getBackgroundPage();
 
 
             // Bootstrap mocha.
-            console.log('mocha.setup');
             mocha.setup({ui: 'bdd', ignoreLeaks: true});
 
             // Create a div to store test results.
