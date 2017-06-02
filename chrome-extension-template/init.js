@@ -46,6 +46,9 @@ chrome.tabs.onUpdated.addListener(function(tabId, info) {
                         logTAP(("# " + err).split("\n").join("\n# "));
                         logTAP("Bail out!");
                         failed++;
+                        chrome.windows.getCurrent(function(win) {
+                            chrome.windows.remove(win.id);
+                        });
                     })
                     .on('end', function() {
                         // Quit browser.

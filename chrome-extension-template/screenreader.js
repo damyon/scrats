@@ -59,7 +59,25 @@
             throw Error('page is not available');
         }
 
-        return new NodeWrapper(page.find({attributes: attributes}));
+        var result = page.find({attributes: attributes});
+        if (result !== undefined && result !== null) {
+            result = new NodeWrapper(result);
+        }
+        return result;
+    };
+
+    ScreenReader.prototype.existsInPage = async function(attributes) {
+        var page = await this._getPage();
+        
+        if (page === null) {
+            throw Error('page is not available');
+        }
+
+        var result = page.find({attributes: attributes});
+        if (result !== undefined && result !== null) {
+            return true;
+        }
+        return false;
     };
 
     ScreenReader.prototype.find = function(wrapper, attributes) {
@@ -120,9 +138,30 @@
         wrapper._node.doDefault();
 
         return new Promise(function(resolve) {
-            setTimeout(resolve, 600);
+            setTimeout(resolve, 800);
         });
     }
+
+    ScreenReader.prototype.isFocusable = function(wrapper) {
+        if (wrapper === null || wrapper._node === null) {
+            return false;
+        }
+        return wrapper._node.state.focusable === true;
+    };
+
+    ScreenReader.prototype.isExpanded = function(wrapper) {
+        if (wrapper === null || wrapper._node === null) {
+            return false;
+        }
+        return wrapper._node.state.expanded === true;
+    };
+
+    ScreenReader.prototype.isVisible = function(wrapper) {
+        if (wrapper === null || wrapper._node === null) {
+            return false;
+        }
+        return wrapper._node.state.invisible !== true;
+    };
 
     ScreenReader.prototype.getAccessibleName = function(wrapper) {
         if (wrapper === null || wrapper._node === null) {
@@ -140,11 +179,12 @@
     ScreenReader.prototype.debugPrintNode = function(wrapper) {
         var output = '';
 
-        if (wrapper === null || wrapper._node === null) {
+        if (wrapper === null || wrapper._node === null || wrapper._node === undefined) {
             console.log('null');
             return;
         }
         output += ' id=' + wrapper._node.id + ' name=' + wrapper._node.name + ' namefrom=' + wrapper._node.nameFrom;
+        output += ' level=' + wrapper._node.hierarchicalLevel;
         output += ' description=' + wrapper._node.description + ' role=' + wrapper._node.role + ' state=' + JSON.stringify(wrapper._node.state);
         console.log(output);
     };
