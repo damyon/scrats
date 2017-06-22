@@ -28,6 +28,7 @@
     "permissions": [
         "tabs",
         "automation",
+        "debugger",
         "http://*/",
         "https://*/"
     ]

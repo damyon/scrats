@@ -54,7 +54,7 @@
 
     ScreenReader.prototype.findInPage = async function(attributes) {
         var page = await this._getPage();
-        
+
         if (page === null) {
             throw Error('page is not available');
         }
@@ -68,7 +68,7 @@
 
     ScreenReader.prototype.existsInPage = async function(attributes) {
         var page = await this._getPage();
-        
+
         if (page === null) {
             throw Error('page is not available');
         }
@@ -187,6 +187,30 @@
         output += ' level=' + wrapper._node.hierarchicalLevel;
         output += ' description=' + wrapper._node.description + ' role=' + wrapper._node.role + ' state=' + JSON.stringify(wrapper._node.state);
         console.log(output);
+    };
+
+    ScreenReader.prototype.sendKey = function(key) {
+        chrome.debugger.attach({ tabId: this.tabId }, "1.0");
+        chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyDown', text : key });
+        chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyUp', text : key });
+        chrome.debugger.detach({ tabId: this.tabId });
+    };
+
+    ScreenReader.prototype.enterText = function(wrapper, text) {
+        if (wrapper === null || wrapper._node === null) {
+            throw Error('node is null');
+        }
+        wrapper._node.focus();
+        var i = 0;
+        for (i = 0; i < text.length; i++) {
+            this.sendKey(text[i]);
+        }
+    };
+
+    ScreenReader.prototype.pause = async function(timeout) {
+        return new Promise(function(resolve) {
+            setTimeout(resolve, timeout);
+        });
     };
 
     // Export this class.
