@@ -189,22 +189,28 @@
         console.log(output);
     };
 
-    ScreenReader.prototype.sendKey = function(key) {
+    ScreenReader.prototype.sendKey = async function(key) {
         chrome.debugger.attach({ tabId: this.tabId }, "1.0");
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyDown', text : key });
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyUp', text : key });
-        chrome.debugger.detach({ tabId: this.tabId });
+
+        var complete = new Promise(function(resolve) {
+            chrome.debugger.detach({ tabId: this.tabId }, resolve);
+        });
+
+        return complete;
     };
 
-    ScreenReader.prototype.enterText = function(wrapper, text) {
+    ScreenReader.prototype.enterText = async function(wrapper, text) {
         if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
         }
         wrapper._node.focus();
         var i = 0;
         for (i = 0; i < text.length; i++) {
-            this.sendKey(text[i]);
+            var sentKey = await this.sendKey(text[i]);
         }
+        return true;
     };
 
     ScreenReader.prototype.pause = async function(timeout) {

@@ -8,10 +8,14 @@ var installDir = require('get-installed-path');
 
 var MAX_EXECUTION_TIME = 60000;
 
-exports.run = function(url, feature, chrome, verbose, scripts, dataset) {
+exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout) {
     console.log('# Execute test suite: ' + feature + ' on site: ' + url);
 
     var chain = Promise.resolve('start');
+
+    if (typeof timeout == 'undefined') {
+        timeout = 10000;
+    }
 
     dataset.forEach((state) => {
         chain = chain.then(function() {
@@ -47,7 +51,9 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset) {
                         return Promise.all(filesToCopy);
                     }).then(function() {
                         // Write the execution dataset to a global variable.
-                        var setGlobal = 'window.state = ' + JSON.stringify(state);
+
+                        var setGlobal = 'window.state = ' + JSON.stringify(state) + ';';
+                        setGlobal += 'window.timeout = ' + timeout + ';';
 
                         return Filesystem.writeFile(extensionDir + '/dataset.js', setGlobal);
                     }).then(function() {

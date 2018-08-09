@@ -20,9 +20,8 @@ chrome.tabs.onUpdated.addListener(function(tabId, info) {
             window.reader = new ScreenReader(tabId);
             var page = chrome.extension.getBackgroundPage();
 
-
             // Bootstrap mocha.
-            mocha.setup({ui: 'bdd', ignoreLeaks: true});
+            mocha.setup({ui: 'bdd', ignoreLeaks: true, timeout: window.timeout});
 
             // Create a div to store test results.
             var div = page.document.createElement('div');
