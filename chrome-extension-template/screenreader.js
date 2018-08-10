@@ -173,20 +173,20 @@
     ScreenReader.prototype.debugPrintTree = async function() {
         var page = await this._getPage();
 
-        console.log(page + '');
+        logDebug(page + '');
     };
 
     ScreenReader.prototype.debugPrintNode = function(wrapper) {
         var output = '';
 
         if (wrapper === null || wrapper._node === null || wrapper._node === undefined) {
-            console.log('null');
+            logDebug('null');
             return;
         }
         output += ' id=' + wrapper._node.id + ' name=' + wrapper._node.name + ' namefrom=' + wrapper._node.nameFrom;
         output += ' level=' + wrapper._node.hierarchicalLevel;
         output += ' description=' + wrapper._node.description + ' role=' + wrapper._node.role + ' state=' + JSON.stringify(wrapper._node.state);
-        console.log(output);
+        logDebug(output);
     };
 
     ScreenReader.prototype.sendKey = async function(key) {

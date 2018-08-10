@@ -1,3 +1,5 @@
+var mochaStarted = false;
+
 var logTAP = function(str) {
     var lines = str.split("\n");
     lines.map(function(line) {
@@ -7,7 +9,13 @@ var logTAP = function(str) {
 
 };
 
-var mochaStarted = false;
+var logDebug = function(str) {
+    var lines = str.split("\n");
+    lines.map(function(line) {
+        console.log('[DEBUG]' + line.replace('[DEBUG]', '(DEBUG)') + '[DEBUG]');
+        return '';
+    });
+};
 
 chrome.tabs.onUpdated.addListener(function(tabId, info) {
     if (info.status == "complete") {

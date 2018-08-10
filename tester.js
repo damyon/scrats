@@ -83,18 +83,30 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout)
 
                             readFile(profileDir + '/chrome_debug.log', 'utf8').then(function(data) {
 
-                                if (verbose > 0) {
-                                    console.log(data);
-                                }
                                 var lines = data.split("\n").filter(function(element) {
-                                    return element.match(/[TAP]/);
+                                    if (verbose > 0) {
+                                        return element.match(/([TAP])|([DEBUG])/);
+                                    } else {
+                                        return element.match(/[TAP]/);
+                                    }
                                 }).map(function(element) {
-                                    var parts = element.split('[TAP]');
-                                    parts.pop();
-                                    parts.shift();
-                                    var line = parts.join('');
-                                    if (line) {
-                                        console.log(line);
+                                    var parts = [];
+                                    if (element.includes('[DEBUG]') && verbose > 0) {
+                                        parts = element.split('[DEBUG]');
+                                        parts.pop();
+                                        parts.shift();
+                                        line = parts.join('');
+                                        if (line) {
+                                            console.log(line);
+                                        }
+                                    } else {
+                                        parts = element.split('[TAP]');
+                                        parts.pop();
+                                        parts.shift();
+                                        var line = parts.join('');
+                                        if (line) {
+                                            console.log(line);
+                                        }
                                     }
                                 });
                                 return lines;
