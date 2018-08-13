@@ -2,6 +2,7 @@
 
 var program = require('commander');
 var tester = require('./tester');
+var version = 'dev';
 
 function increaseVerbosity(v, total) {
   return total + 1;
@@ -13,6 +14,7 @@ function appendPreflightScript(file, preflight) {
 }
 
 program
+ .version(version)
  .arguments('<url>')
  .option('-f, --feature <value>', 'The feature file to run on the url')
  .option('-t, --timeout <value>', 'The number of milliseconds for a valid timeout')

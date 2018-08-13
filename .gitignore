@@ -57,3 +57,5 @@ typings/
 # dotenv environment variables file
 .env
 
+# NPM install file
+package-lock.json
