@@ -2,7 +2,7 @@
 
 var program = require('commander');
 var tester = require('./tester');
-var version = 'dev';
+var version = '0.1.1';
 
 function increaseVerbosity(v, total) {
   return total + 1;
