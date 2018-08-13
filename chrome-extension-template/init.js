@@ -1,6 +1,9 @@
 var mochaStarted = false;
 
 var logTAP = function(str) {
+    if (str == null) {
+        str = 'null';
+    }
     var lines = str.split("\n");
     lines.map(function(line) {
         console.log('[TAP]' + line.replace('[TAP]', '(TAP)') + '[TAP]');
@@ -10,6 +13,9 @@ var logTAP = function(str) {
 };
 
 var logDebug = function(str) {
+    if (str == null) {
+        str = 'null';
+    }
     var lines = str.split("\n");
     lines.map(function(line) {
         console.log('[DEBUG]' + line.replace('[DEBUG]', '(DEBUG)') + '[DEBUG]');

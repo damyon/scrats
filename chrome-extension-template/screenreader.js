@@ -52,71 +52,79 @@
         });
     };
 
-    ScreenReader.prototype.findInPage = async function(attributes) {
+    ScreenReader.prototype._mapSearchAttributes = function(role, name) {
+        var attributes = { role: role };
+        if ((typeof name != 'undefined') && name != '') {
+            attributes.name = name;
+        }
+        return { attributes: attributes };
+    };
+
+    ScreenReader.prototype.findInPage = async function(role, name) {
         var page = await this._getPage();
 
         if (page === null) {
             throw Error('page is not available');
         }
 
-        var result = page.find({attributes: attributes});
+        var result = page.find(this._mapSearchAttributes(role, name));
         if (result !== undefined && result !== null) {
             result = new NodeWrapper(result);
         }
         return result;
     };
 
-    ScreenReader.prototype.existsInPage = async function(attributes) {
+    ScreenReader.prototype.existsInPage = async function(role, name) {
         var page = await this._getPage();
 
         if (page === null) {
             throw Error('page is not available');
         }
 
-        var result = page.find({attributes: attributes});
+        var result = page.find(this._mapSearchAttributes(role, name));
         if (result !== undefined && result !== null) {
             return true;
         }
         return false;
     };
 
-    ScreenReader.prototype.find = function(wrapper, attributes) {
+    ScreenReader.prototype.find = function(wrapper, role, name) {
         if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
         }
-        return new NodeWrapper(wrapper._node.find({attributes: attributes}));
+        return new NodeWrapper(wrapper._node.find(this._mapSearchAttributes(role, name)));
     }
 
-    ScreenReader.prototype.next = function(wrapper, attributes) {
+    ScreenReader.prototype.next = function(wrapper, role, name) {
         if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
         }
-        var result = this._next(wrapper._node, attributes, false);
+        var result = this._next(wrapper._node, role, name, false);
         if (result) {
             return new NodeWrapper(result);
         }
     }
 
-    ScreenReader.prototype._next = function(node, attributes, skipChild) {
+    ScreenReader.prototype._next = function(node, role, name, skipChild) {
         var result = false;
         if (node === null || typeof node === "undefined") {
             return false;
         }
-        if (node.matches({ "attributes": attributes })) {
+        if (node.matches(this._mapSearchAttributes(role, name))) {
             return node;
         }
         if (node.firstChild && !skipChild) {
-            result = this._next(node.firstChild, attributes, false);
+            result = this._next(node.firstChild, role, name, false);
         }
 
         if (!result) {
             if (node.nextSibling) {
-                result = this._next(node.nextSibling, attributes, false);
+                result = this._next(node.nextSibling, role, name, false);
             }
         }
         if (!result) {
             if (node.parent) {
-                result = this._next(node.parent, attributes, true);
+                result = this._next(node.parent, role, name, true);
             }
         }
         return result;
