@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Screen Reader Acceptance Testing System",
-    "version": "0.1.0",
+    "version": "0.1.8",
     "background": {
         "scripts": [
             "expect.js",
