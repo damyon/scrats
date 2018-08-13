@@ -92,7 +92,11 @@
         if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
         }
-        return new NodeWrapper(wrapper._node.find(this._mapSearchAttributes(role, name)));
+        var result = wrapper._node.find(this._mapSearchAttributes(role, name));
+        if (result !== undefined && result !== null) {
+            result = new NodeWrapper(result);
+        }
+        return result;
     }
 
     ScreenReader.prototype.next = function(wrapper, role, name) {
