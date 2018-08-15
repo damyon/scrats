@@ -99,6 +99,21 @@
         return result;
     }
 
+    ScreenReader.prototype.findAll = function(wrapper, role, name) {
+        if (wrapper === null || wrapper._node === null) {
+            throw Error('node is null');
+        }
+        var nodes = wrapper._node.findAll(this._mapSearchAttributes(role, name));
+        var results = [];
+        var i;
+
+        for (i = 0; i < nodes.length; i++) {
+            results[i] = new NodeWrapper(nodes[i]);
+        }
+        return results;
+    }
+
+
     ScreenReader.prototype.next = function(wrapper, role, name) {
         if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
