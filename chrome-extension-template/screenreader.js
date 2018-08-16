@@ -25,12 +25,15 @@
     };
 
     var NodeWrapper = function(automationNode) {
-        this._node = automationNode;
+        this._node = null;
+        if (automationNode) {
+            this._node = automationNode;
+        }
     };
 
     ScreenReader.prototype.getFocus = function() {
         return new Promise(function(resolve, reject) {
-            chrome.automation.getFocus(this.tabId, (node) => {
+            chrome.automation.getFocus((node) => {
                 resolve(new NodeWrapper(node));
             });
         });
@@ -154,19 +157,17 @@
         if (wrapper === null || wrapper._node === null) {
             throw Error('node is null');
         }
+
         wrapper._node.focus();
+
+        return true;
     }
 
-    ScreenReader.prototype.doDefault = function(wrapper) {
-        if (wrapper === null || wrapper._node === null) {
-            throw Error('node is null');
-        }
-        wrapper._node.focus();
-        wrapper._node.doDefault();
+    ScreenReader.prototype.doDefault = async function(wrapper) {
+        this.focus(wrapper);
+        await wrapper._node.doDefault();
 
-        return new Promise(function(resolve) {
-            setTimeout(resolve, 800);
-        });
+        return this.pause(800);
     }
 
     ScreenReader.prototype.isFocusable = function(wrapper) {
@@ -229,15 +230,12 @@
     };
 
     ScreenReader.prototype.enterText = async function(wrapper, text) {
-        if (wrapper === null || wrapper._node === null) {
-            throw Error('node is null');
-        }
-        wrapper._node.focus();
+        this.focus(wrapper);
         var i = 0;
         for (i = 0; i < text.length; i++) {
             var sentKey = await this.sendKey(text[i]);
         }
-        return true;
+        return this.pause(500);
     };
 
     ScreenReader.prototype.pause = async function(timeout) {
