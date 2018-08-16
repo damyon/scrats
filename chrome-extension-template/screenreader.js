@@ -231,9 +231,14 @@
 
     ScreenReader.prototype.enterText = async function(wrapper, text) {
         this.focus(wrapper);
-        var i = 0;
-        for (i = 0; i < text.length; i++) {
-            var sentKey = await this.sendKey(text[i]);
+
+        if (wrapper._node.role == 'textField') {
+            wrapper._node.setValue(text);
+        } else {
+            var i = 0;
+            for (i = 0; i < text.length; i++) {
+                var sentKey = await this.sendKey(text[i]);
+            }
         }
         return this.pause(500);
     };
