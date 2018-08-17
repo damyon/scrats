@@ -31,6 +31,16 @@
         }
     };
 
+    ScreenReader.prototype.isEmpty = function(wrapper) {
+        if (wrapper === null ||
+                typeof wrapper == 'undefined'||
+                wrapper._node === null ||
+                typeof wrapper._node == 'undefined') {
+            return true;
+        }
+        return false;
+    }
+
     ScreenReader.prototype.getFocus = function() {
         return new Promise(function(resolve, reject) {
             chrome.automation.getFocus((node) => {
@@ -56,11 +66,11 @@
     };
 
     ScreenReader.prototype._mapSearchAttributes = function(role, name) {
-        var attributes = { role: role };
+        var attributes = { };
         if ((typeof name != 'undefined') && name != '') {
             attributes.name = name;
         }
-        return { attributes: attributes };
+        return { role: role, attributes: attributes };
     };
 
     ScreenReader.prototype.findInPage = async function(role, name) {
@@ -92,7 +102,7 @@
     };
 
     ScreenReader.prototype.find = function(wrapper, role, name) {
-        if (wrapper === null || wrapper._node === null) {
+        if (this.isEmpty(wrapper)) {
             throw Error('node is null');
         }
         var result = wrapper._node.find(this._mapSearchAttributes(role, name));
@@ -103,50 +113,53 @@
     }
 
     ScreenReader.prototype.findAll = function(wrapper, role, name) {
-        if (wrapper === null || wrapper._node === null) {
+        if (this.isEmpty(wrapper)) {
             throw Error('node is null');
         }
         var nodes = wrapper._node.findAll(this._mapSearchAttributes(role, name));
         var results = [];
         var i;
+        var node;
 
         for (i = 0; i < nodes.length; i++) {
-            results[i] = new NodeWrapper(nodes[i]);
+            node = nodes[i];
+
+            if (node != null) {
+                results[results.length] = new NodeWrapper(node);
+            }
         }
         return results;
     }
 
-
+    /**
+     * We search down and across but not "up".
+     */
     ScreenReader.prototype.next = function(wrapper, role, name) {
-        if (wrapper === null || wrapper._node === null) {
+        if (this.isEmpty(wrapper)) {
             throw Error('node is null');
         }
-        var result = this._next(wrapper._node, role, name, false);
+        var result = this._next(wrapper._node, role, name, false, true);
         if (result) {
             return new NodeWrapper(result);
         }
+        return null;
     }
 
-    ScreenReader.prototype._next = function(node, role, name, skipChild) {
+    ScreenReader.prototype._next = function(node, role, name, skipChild, skipThis) {
         var result = false;
         if (node === null || typeof node === "undefined") {
             return false;
         }
-        if (node.matches(this._mapSearchAttributes(role, name))) {
+        if (!skipThis && node.matches(this._mapSearchAttributes(role, name))) {
             return node;
         }
         if (node.firstChild && !skipChild) {
-            result = this._next(node.firstChild, role, name, false);
+            result = this._next(node.firstChild, role, name, false, false);
         }
 
         if (!result) {
             if (node.nextSibling) {
-                result = this._next(node.nextSibling, role, name, false);
-            }
-        }
-        if (!result) {
-            if (node.parent) {
-                result = this._next(node.parent, role, name, true);
+                result = this._next(node.nextSibling, role, name, false, false);
             }
         }
         return result;
@@ -154,7 +167,7 @@
 
 
     ScreenReader.prototype.focus = function(wrapper) {
-        if (wrapper === null || wrapper._node === null) {
+        if (this.isEmpty(wrapper)) {
             throw Error('node is null');
         }
 
@@ -171,28 +184,28 @@
     }
 
     ScreenReader.prototype.isFocusable = function(wrapper) {
-        if (wrapper === null || wrapper._node === null) {
+        if (this.isEmpty(wrapper)) {
             return false;
         }
         return wrapper._node.state.focusable === true;
     };
 
     ScreenReader.prototype.isExpanded = function(wrapper) {
-        if (wrapper === null || wrapper._node === null) {
+        if (this.isEmpty(wrapper)) {
             return false;
         }
         return wrapper._node.state.expanded === true;
     };
 
     ScreenReader.prototype.isVisible = function(wrapper) {
-        if (wrapper === null || wrapper._node === null) {
+        if (this.isEmpty(wrapper)) {
             return false;
         }
         return wrapper._node.state.invisible !== true;
     };
 
     ScreenReader.prototype.getAccessibleName = function(wrapper) {
-        if (wrapper === null || wrapper._node === null) {
+        if (this.isEmpty(wrapper)) {
             throw Error('node is null');
         }
         return wrapper._node.name;
@@ -207,7 +220,7 @@
     ScreenReader.prototype.debugPrintNode = function(wrapper) {
         var output = '';
 
-        if (wrapper === null || wrapper._node === null || wrapper._node === undefined) {
+        if (this.isEmpty(wrapper)) {
             logDebug('null');
             return;
         }
@@ -227,6 +240,27 @@
         });
 
         return complete;
+    };
+
+    ScreenReader.prototype.getPageUrl = async function() {
+        return this._getPage().then((page) => {
+            return page.docUrl;
+        });
+    };
+
+    ScreenReader.prototype.getAttributeValue = async function(wrapper, attributeName) {
+        var attributes;
+
+        if (this.isEmpty(wrapper)) {
+            throw Error('node is null');
+        }
+
+        attributes = wrapper._node.htmlAttributes;
+
+        if (attributeName in attributes) {
+            return attributes[attributeName];
+        }
+        return false;
     };
 
     ScreenReader.prototype.enterText = async function(wrapper, text) {

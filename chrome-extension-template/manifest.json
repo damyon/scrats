@@ -7,6 +7,7 @@
             "expect.js",
             "mocha.js",
             "screenreader.js",
+            "wai.js",
             "dataset.js",
             "preflight0.js",
             "preflight1.js",

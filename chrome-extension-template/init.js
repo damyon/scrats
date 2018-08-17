@@ -13,6 +13,8 @@ var logTAP = function(str) {
 };
 
 var logDebug = function(str) {
+    str = JSON.stringify(str);
+
     if (str == null) {
         str = 'null';
     }
