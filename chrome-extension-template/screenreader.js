@@ -33,7 +33,7 @@
 
     ScreenReader.prototype.isEmpty = function(wrapper) {
         if (wrapper === null ||
-                typeof wrapper == 'undefined'||
+                typeof wrapper == 'undefined' ||
                 wrapper._node === null ||
                 typeof wrapper._node == 'undefined') {
             return true;
@@ -243,9 +243,9 @@
     };
 
     ScreenReader.prototype.getPageUrl = async function() {
-        return this._getPage().then((page) => {
-            return page.docUrl;
-        });
+        var page = await this._getPage();
+
+        return page.docUrl;
     };
 
     ScreenReader.prototype.getAttributeValue = async function(wrapper, attributeName) {
@@ -281,6 +281,50 @@
         return new Promise(function(resolve) {
             setTimeout(resolve, timeout);
         });
+    };
+
+    ScreenReader.prototype.getChild = async function(wrapper, role) {
+        var result;
+
+        if (this.isEmpty(wrapper)) {
+            throw Error('node is null');
+        }
+
+        result = wrapper._node.firstChild;
+        if (result == null) {
+            throw Error('node has no children');
+        }
+        if (role != result.role) {
+            throw Error('child has incorrect role. "' + result.role + ' + " found and "' + role + '" expected.');
+        }
+
+        return new NodeWrapper(result);
+    };
+
+    ScreenReader.prototype.getChildren = async function(wrapper, role) {
+        var children, results, i, node;
+
+        if (this.isEmpty(wrapper)) {
+            throw Error('node is null');
+        }
+
+        children = wrapper._node.children;
+        if (children == null) {
+            throw Error('node has no children nodes');
+        }
+        results = [];
+        for (i = 0; i < children.length; i++) {
+            node = children[i];
+
+            if (node == null) {
+                throw Error('node has invalid child node');
+            }
+            if (role != node.role) {
+                throw Error('child has incorrect role. "' + node.role + ' + " found and "' + role + '" expected.');
+            }
+            results[results.length] = new NodeWrapper(node);
+        }
+        return results;
     };
 
     // Export this class.
