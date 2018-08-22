@@ -3,7 +3,7 @@
     };
 
     WAI.prototype.validateBreadcrumb = async function(label) {
-        // Example: https://www.w3.org/TR/2018/NOTE-wai-aria-practices-1.1-20180726/#breadcrumb
+        // Example: https://www.w3.org/TR/wai-aria-practices-1.1/#breadcrumb
         var navigation,
             list,
             listItems,
