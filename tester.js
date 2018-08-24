@@ -14,7 +14,7 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout)
     var chain = Promise.resolve('start');
 
     if (typeof timeout == 'undefined') {
-        timeout = 10000;
+        timeout = 60000;
     }
 
     dataset.forEach((state) => {
