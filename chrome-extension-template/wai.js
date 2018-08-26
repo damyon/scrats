@@ -61,7 +61,7 @@
         // Use the down arrow key to navigate through all the menu items.
         for (i = 0; i < menuItems.length - 1; i++) {
             expect(selectedMenuItemIndex(menuItems)).to.be(i);
-            done = reader.startListening(menu, "focus");
+            done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
             await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
             await done;
             expect(selectedMenuItemIndex(menuItems)).to.be(i+1);
@@ -69,51 +69,59 @@
         // Press the up arrow to move back.
         for (i = menuItems.length - 1; i > 0; i--) {
             expect(selectedMenuItemIndex(menuItems)).to.be(i);
-            done = reader.startListening(menu, "focus");
+            done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
             await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
             await done;
             expect(selectedMenuItemIndex(menuItems)).to.be(i-1);
         }
         // Check that now up and down wrap around the menu.
-        done = reader.startListening(menu, "focus");
+        done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
         await done;
         menuItems = await reader.getChildren(menu, 'menuItem');
         expect(selectedMenuItemIndex(menuItems)).to.be(menuItems.length - 1);
-        done = reader.startListening(menu, "focus");
+        done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
         await done;
         menuItems = await reader.getChildren(menu, 'menuItem');
         expect(selectedMenuItemIndex(menuItems)).to.be(0);
         
         // Check that Home and End keys go to start and end.
-        done = reader.startListening(menu, "focus");
+        done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.END);
         await done;
         expect(selectedMenuItemIndex(menuItems)).to.be(menuItems.length - 1);
-        done = reader.startListening(menu, "focus");
+        done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.HOME);
         await done;
         menuItems = await reader.getChildren(menu, 'menuItem');
         expect(selectedMenuItemIndex(menuItems)).to.be(0);
 
         // Escape key should close the menu.
-        done = reader.startListening(menu, "ariaAttributeChanged");
+        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
 
         // Check the menu is now closed.
+        logDebug('ESCAPE');
         ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
         expect(ariaExpanded).to.be(false);
 
         // Space should open the menu.
+        logDebug('SPACE');
+        done = reader.startListening(menuButton, chrome.automation.EventType.ARIA_ATTRIBUTE_CHANGED);
         await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
+        logDebug('WAIT FOR SPACE');
+        await done;
         ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
         expect(ariaExpanded).to.be('true');
         expect(reader.isVisible(menu)).to.be(true);
 
         // Escape key should close the menu.
+        logDebug('ESCAPE');
+        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
         ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
         expect(ariaExpanded).to.be(false);
         // Enter should open the menu.
@@ -121,19 +129,28 @@
         ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
         expect(ariaExpanded).to.be('true');
         // Escape key should close the menu.
+        logDebug('ESCAPE');
+        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
         ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
         expect(ariaExpanded).to.be(false);
         // Down arrow should open the menu.
+        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+        await done;
         ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
         expect(ariaExpanded).to.be('true');
         // Escape key should close the menu.
+        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
         ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
         expect(ariaExpanded).to.be(false);
         // Up arrow should open the menu and select the last item..
+        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+        await done;
         ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
         expect(ariaExpanded).to.be('true');
         menuItems = await reader.getChildren(menu, 'menuItem');

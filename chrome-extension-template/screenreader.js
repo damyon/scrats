@@ -277,7 +277,7 @@
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyUp', windowsVirtualKeyCode: keyCodes[key][0], keyIdenfifier: keyCodes[key][1]});
 
         // Wait for keyboard handlers to fire.
-        await this.pause(500);
+        // await this.pause(500);
 
         var complete = new Promise(function(resolve) {
             chrome.debugger.detach({ tabId: this.tabId }, resolve);
