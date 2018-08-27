@@ -527,7 +527,7 @@
         if (attributeName in attributes) {
             return attributes[attributeName];
         }
-        return false;
+        return 'false';
     };
 
     /**

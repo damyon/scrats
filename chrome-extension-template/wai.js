@@ -31,7 +31,7 @@
 
         // Check the menu is closed until we act on the button.
         ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
-        expect(ariaExpanded).to.be(false);
+        expect(ariaExpanded).to.be('false');
 
         // First we will action the button
         await reader.doDefault(menuButton);
