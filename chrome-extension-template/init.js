@@ -1,5 +1,9 @@
 var mochaStarted = false;
 
+/**
+ * General output function
+ * @param {String} str
+ */
 var logTAP = function(str) {
     if (str == null) {
         str = 'null';
@@ -12,6 +16,12 @@ var logTAP = function(str) {
 
 };
 
+/**
+ * Debug only output function.
+ *
+ * Will stringify an object if it gets one.
+ * @param {Object} str
+ */
 var logDebug = function(str) {
     str = JSON.stringify(str);
 
@@ -25,6 +35,7 @@ var logDebug = function(str) {
     });
 };
 
+// Listen for when the first tab is loaded and then start the test.
 chrome.tabs.onUpdated.addListener(function(tabId, info) {
     if (info.status == "complete") {
         if (mochaStarted) {

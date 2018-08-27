@@ -1,32 +1,29 @@
 (function() {
+    /**
+     * WAI is the namespace for the functions returned by this module.
+     */
     var WAI = function() {
     };
 
-    var selectedMenuItemIndex = function(menuItems) {
-        var i = 0, selectedIndex = -1;
-
-        for (i = 0; i < menuItems.length; i++) {
-            menuItem = menuItems[i];
-            expect(reader.getRole(menuItem)).to.be("menuItem");
-            expect(reader.getAccessibleName(menuItem)).not.to.be('');
-            expect(reader.isFocusable(menuItem)).to.be(true);
-            if (reader.isFocused(menuItem)) {
-                selectedIndex = i;
-            }
-        }
-        return selectedIndex;
-    };
-
+    /**
+     * Check labels and keyboard navigation for a menu of links.
+     * Throws an error if the validation fails.
+     *
+     * @method validateMenuButtonLinks
+     * @param {String} role The expected role of the menu button to validate.
+     * @param {String} label The expected label text of the menu button to validate.
+     * @return {Boolean} true on success.
+     */
     WAI.prototype.validateMenuButtonLinks = async function(role, label) {
         // Example
         // https://www.w3.org/TR/wai-aria-practices-1.1/examples/menu-button/menu-button-links.html
         var menuButton,
             ariaExpanded,
-            controlledList,
             menu,
             menuItems,
             i,
-            done;
+            done,
+            menuSize;
 
         menuButton = await reader.findInPage(role, label);
 
@@ -40,15 +37,11 @@
         await reader.doDefault(menuButton);
 
         // Now the menu should be expanded.
-        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
+        ariaExpanded = reader.getAttributeValue(menuButton, 'aria-expanded');
         expect(ariaExpanded).to.be('true');
         
         // The menu should now be findable from aria-controls.
-        controlledList = await reader.getControls(menuButton);
-
-        expect(controlledList.length).to.be(1);
-
-        menu = controlledList.pop();
+        menu = reader.getSingleControl(menuButton);
 
         // The role of the menu should be "menu"
         expect(reader.isVisible(menu)).to.be(true);
@@ -57,106 +50,104 @@
         menuItems = await reader.getChildren(menu, 'menuItem');
 
         expect(menuItems.length).not.to.be(0);
+        menuSize = menuItems.length;
 
         // Use the down arrow key to navigate through all the menu items.
         for (i = 0; i < menuItems.length - 1; i++) {
-            expect(selectedMenuItemIndex(menuItems)).to.be(i);
+            expect(await reader.getSelectedMenuIndex(menu)).to.be(i);
             done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
             await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
             await done;
-            expect(selectedMenuItemIndex(menuItems)).to.be(i+1);
+            expect(await reader.getSelectedMenuIndex(menu)).to.be(i + 1);
         }
         // Press the up arrow to move back.
         for (i = menuItems.length - 1; i > 0; i--) {
-            expect(selectedMenuItemIndex(menuItems)).to.be(i);
+            expect(await reader.getSelectedMenuIndex(menu)).to.be(i);
             done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
             await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
             await done;
-            expect(selectedMenuItemIndex(menuItems)).to.be(i-1);
+            expect(await reader.getSelectedMenuIndex(menu)).to.be(i - 1);
         }
         // Check that now up and down wrap around the menu.
         done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
         await done;
-        menuItems = await reader.getChildren(menu, 'menuItem');
-        expect(selectedMenuItemIndex(menuItems)).to.be(menuItems.length - 1);
+        menu = reader.getSingleControl(menuButton);
+        expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
+
         done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
         await done;
-        menuItems = await reader.getChildren(menu, 'menuItem');
-        expect(selectedMenuItemIndex(menuItems)).to.be(0);
+        menu = reader.getSingleControl(menuButton);
+        expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
         
         // Check that Home and End keys go to start and end.
         done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.END);
         await done;
-        expect(selectedMenuItemIndex(menuItems)).to.be(menuItems.length - 1);
+        menu = reader.getSingleControl(menuButton);
+        expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
+
         done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.HOME);
         await done;
-        menuItems = await reader.getChildren(menu, 'menuItem');
-        expect(selectedMenuItemIndex(menuItems)).to.be(0);
+        menu = reader.getSingleControl(menuButton);
+        expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
 
         // Escape key should close the menu.
-        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
+        done = reader.listenForMenuClosed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
 
-        // Check the menu is now closed.
-        logDebug('ESCAPE');
-        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
-        expect(ariaExpanded).to.be(false);
-
         // Space should open the menu.
-        logDebug('SPACE');
-        done = reader.startListening(menuButton, chrome.automation.EventType.ARIA_ATTRIBUTE_CHANGED);
+        done = reader.listenForMenuOpened(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
-        logDebug('WAIT FOR SPACE');
         await done;
-        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
-        expect(ariaExpanded).to.be('true');
+        menu = reader.getSingleControl(menuButton);
         expect(reader.isVisible(menu)).to.be(true);
 
         // Escape key should close the menu.
-        logDebug('ESCAPE');
-        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
+        done = reader.listenForMenuClosed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
-        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
-        expect(ariaExpanded).to.be(false);
+
         // Enter should open the menu.
+        done = reader.listenForMenuOpened(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ENTER);
-        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
-        expect(ariaExpanded).to.be('true');
+        await done;
+
         // Escape key should close the menu.
-        logDebug('ESCAPE');
-        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
+        done = reader.listenForMenuClosed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
-        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
-        expect(ariaExpanded).to.be(false);
+
         // Down arrow should open the menu.
-        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
+        done = reader.listenForMenuOpened(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
         await done;
-        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
-        expect(ariaExpanded).to.be('true');
         // Escape key should close the menu.
-        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
+        done = reader.listenForMenuClosed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
-        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
-        expect(ariaExpanded).to.be(false);
+
         // Up arrow should open the menu and select the last item..
-        done = reader.startListening(menuButton, chrome.automation.EventType.FOCUS);
+        done = reader.listenForMenuOpened(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
         await done;
-        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
-        expect(ariaExpanded).to.be('true');
-        menuItems = await reader.getChildren(menu, 'menuItem');
-        expect(selectedMenuItemIndex(menuItems)).to.be(menuItems.length - 1);
+
+        menu = reader.getSingleControl(menuButton);
+        expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
+        return true;
     };
 
+    /**
+     * Check labels and accessibility of links displayed in a breadcrumb trail of links.
+     * Throws an error if the validation fails.
+     *
+     * @method validateBreadcrumb
+     * @param {String} label The expected label text of the breadcrumb to validate.
+     * @return {Boolean} true on success.
+     */
     WAI.prototype.validateBreadcrumb = async function(label) {
         // Example
         // https://www.w3.org/TR/wai-aria-practices-1.1/examples/breadcrumb/index.html
@@ -195,7 +186,7 @@
             navLink = await reader.find(listItem, 'link');
             if (navLink) {
                 // See if it the current page.
-                ariaCurrent = await reader.getAttributeValue(navLink, 'aria-current');
+                ariaCurrent = reader.getAttributeValue(navLink, 'aria-current');
                 if (ariaCurrent == 'page') {
                     currentCount += 1;
                     lastCurrent = true;
