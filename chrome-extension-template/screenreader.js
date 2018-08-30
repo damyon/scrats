@@ -467,7 +467,12 @@
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyDown', windowsVirtualKeyCode: keyCodes[key][0], keyIdenfifier: keyCodes[key][1]});
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyUp', windowsVirtualKeyCode: keyCodes[key][0], keyIdenfifier: keyCodes[key][1]});
 
-        await this.pause(10);
+        if (key == this.specialKeys.ESCAPE) {
+            // Wait a bit longer for cancel keys because we may need to wait for focus to shift.
+            await this.pause(500);
+        } else {
+            await this.pause(10);
+        }
 
         var complete = new Promise(function(resolve) {
             chrome.debugger.detach({ tabId: this.tabId }, resolve);
@@ -724,26 +729,25 @@
      * @return {Promise} Resolved when we get an event on the button and the menu is closed.
      */
     ScreenReader.prototype.listenForMenuClosed = async function(menuButton) {
-        var p;
+        var p, pollDelay = 200;
 
         if (this.isEmpty(menuButton)) {
             throw Error('Menu button is null');
         }
 
         p = new Promise(function(resolve, reject) {
-            var changeHappened = function(change) {
+            var awaitChange = function() {
                 var ariaExpanded;
 
-                if (change.target == menuButton._node) {
-                    ariaExpanded = this.getAttributeValue(menuButton, 'aria-expanded');
-                    if (ariaExpanded != 'true') {
-                        // We are happy the menu is closed.
-                        chrome.automation.removeTreeChangeObserver(changeHappened);
-                        resolve();
-                    }
+                ariaExpanded = this.getAttributeValue(menuButton, 'aria-expanded');
+                if (ariaExpanded != 'true') {
+                    // We are happy the menu is closed.
+                    resolve();
+                } else {
+                    setTimeout(awaitChange, pollDelay);
                 }
             }.bind(this);
-            chrome.automation.addTreeChangeObserver("allTreeChanges", changeHappened);
+            setTimeout(awaitChange, pollDelay);
         }.bind(this));
 
         return p;
@@ -757,26 +761,25 @@
      * @return {Promise} Resolved when we get an event on the button and the menu is opened.
      */
     ScreenReader.prototype.listenForMenuOpened = async function(menuButton) {
-        var p;
+        var p, pollDelay = 200;
 
         if (this.isEmpty(menuButton)) {
             throw Error('Menu button is null');
         }
 
         p = new Promise(function(resolve, reject) {
-            var changeHappened = function(change) {
+            var awaitChange = function() {
                 var ariaExpanded;
 
-                if (change.target == menuButton._node) {
-                    ariaExpanded = this.getAttributeValue(menuButton, 'aria-expanded');
-                    if (ariaExpanded == 'true') {
-                        // We are happy the menu is open.
-                        chrome.automation.removeTreeChangeObserver(changeHappened);
-                        resolve();
-                    }
+                ariaExpanded = this.getAttributeValue(menuButton, 'aria-expanded');
+                if (ariaExpanded == 'true') {
+                    // We are happy the menu is open.
+                    resolve();
+                } else {
+                    setTimeout(awaitChange, pollDelay);
                 }
             }.bind(this);
-            chrome.automation.addTreeChangeObserver("allTreeChanges", changeHappened);
+            setTimeout(awaitChange, pollDelay);
         }.bind(this));
 
         return p;
@@ -813,8 +816,7 @@
      */
     ScreenReader.prototype.getSelectedMenuIndex = async function(menu) {
         var i = 0, selectedIndex = -1;
-        var menuItems = await reader.getChildren(menu, 'menuItem');
-        logDebug('Menu has ' + menuItems.length + ' entries');
+        var menuItems = await this.getChildren(menu, 'menuItem');
 
         for (i = 0; i < menuItems.length; i++) {
             menuItem = menuItems[i];

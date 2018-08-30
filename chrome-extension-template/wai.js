@@ -121,10 +121,12 @@
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
 
+
         // Down arrow should open the menu.
         done = reader.listenForMenuOpened(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
         await done;
+
         // Escape key should close the menu.
         done = reader.listenForMenuClosed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
@@ -137,6 +139,12 @@
 
         menu = reader.getSingleControl(menuButton);
         expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
+
+        // Finish with a closed menu.
+        done = reader.listenForMenuClosed(menuButton);
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
+
         return true;
     };
 
