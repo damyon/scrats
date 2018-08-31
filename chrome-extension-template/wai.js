@@ -199,15 +199,18 @@
         navigation = await reader.findInPage("navigation", label);
 
         // We should have found the navigation node.
+        explainTest('The breadcrumbs can be found with role: "navigation" and label: "' + label + '"');
         expect(reader.isEmpty(navigation)).to.be(false);
 
         // We should have an ordered list.
         list = await reader.getChild(navigation, 'list');
+        explainTest('The breadcrumbs contain a list');
         expect(reader.isEmpty(list)).to.be(false);
 
         listItems = await reader.getChildren(list, 'listItem');
 
         // Verify we have some entries in the list.
+        explainTest('The list of breadcrumbs is not empty');
         expect(listItems.length).not.to.be(0);
 
         // Get the url of the current page.
@@ -232,8 +235,10 @@
             }
         }
         // Verify only the last link in the breadcrumbs was marked as the current page.
+        explainTest('The last link in the breadcrumbs has represents the current page');
         expect(lastCurrent).to.be(true);
         // Verify there was only one current page in the breadcrumbs.
+        explainTest('There was only one current page in the list of breadcrumbs');
         expect(currentCount).to.be(1);
 
         // Follow the last link.
@@ -241,6 +246,7 @@
 
         // Get the new page Url and verify it is the same page we were already on.
         samePageUrl = await reader.getPageUrl();
+        explainTest('Following the last link in the breadcrumbs led to the same page');
         expect(pageUrl).to.be(samePageUrl);
 
         return true;
