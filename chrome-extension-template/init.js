@@ -17,13 +17,36 @@ var logTAP = function(str) {
 };
 
 /**
+ * Verbose output function.
+ *
+ * Indents and comments an output statement.
+ * @param {Object} str
+ */
+var explainTest = function(str) {
+    if (typeof str != 'string') {
+        str = JSON.stringify(str);
+    }
+
+    if (str == null) {
+        str = 'null';
+    }
+    var lines = str.split("\n");
+    lines.map(function(line) {
+        console.log('[DEBUG]#   ' + line.replace('[DEBUG]', '(DEBUG)') + '[DEBUG]');
+        return '';
+    });
+};
+
+/**
  * Debug only output function.
  *
  * Will stringify an object if it gets one.
  * @param {Object} str
  */
 var logDebug = function(str) {
-    str = JSON.stringify(str);
+    if (typeof str != 'string') {
+        str = JSON.stringify(str);
+    }
 
     if (str == null) {
         str = 'null';
@@ -63,12 +86,15 @@ chrome.tabs.onUpdated.addListener(function(tabId, info) {
                 logTAP('1..' + mocha.suite.total());
 
                 mocha.run()
+                    .on('suite', function(suite) {
+                        logTAP('# Test suite: "' + suite.title + '". ' + suite.total() + ' test(s).');
+                    })
                     .on('pass', function(test) {
-                        logTAP("ok " + (testNo++) + " - " + test.title);
+                        logTAP("ok " + (testNo++) + " - it " + test.title);
                         passed++;
                     })
                     .on('fail', function(test, err) {
-                        logTAP("not ok " + (testNo++) + " - " + test.title);
+                        logTAP("not ok " + (testNo++) + " - it " + test.title);
                         logTAP(("# " + err).split("\n").join("\n# "));
                         logTAP("Bail out!");
                         failed++;

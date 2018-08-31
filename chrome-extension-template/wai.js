@@ -27,10 +27,15 @@
 
         menuButton = await reader.findInPage(role, label);
 
+        explainTest('The menu button can be found with role: "' + role + '" and label: "' + label + '"');
+        expect(reader.isEmpty(menuButton)).to.be(false);
+
         await reader.focus(menuButton);
 
         // Check the menu is closed until we act on the button.
         ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
+
+        explainTest('The menu is initially closed');
         expect(ariaExpanded).to.be('false');
 
         // First we will action the button
@@ -38,34 +43,42 @@
 
         // Now the menu should be expanded.
         ariaExpanded = reader.getAttributeValue(menuButton, 'aria-expanded');
+        explainTest('The menu is expanded when the button is actioned');
         expect(ariaExpanded).to.be('true');
         
         // The menu should now be findable from aria-controls.
         menu = reader.getSingleControl(menuButton);
 
         // The role of the menu should be "menu"
+        explainTest('The menu is visible');
         expect(reader.isVisible(menu)).to.be(true);
+        explainTest('The menu has the correct role (menu)');
         expect(reader.getRole(menu)).to.be("menu");
 
         menuItems = await reader.getChildren(menu, 'menuItem');
 
+        explainTest('The menu has menu entries');
         expect(menuItems.length).not.to.be(0);
         menuSize = menuItems.length;
 
         // Use the down arrow key to navigate through all the menu items.
         for (i = 0; i < menuItems.length - 1; i++) {
+            explainTest('The currently selected menu item is ' + i);
             expect(await reader.getSelectedMenuIndex(menu)).to.be(i);
             done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
             await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
             await done;
+            explainTest('After the down key, the currently selected menu item is ' + (i + 1));
             expect(await reader.getSelectedMenuIndex(menu)).to.be(i + 1);
         }
         // Press the up arrow to move back.
         for (i = menuItems.length - 1; i > 0; i--) {
+            explainTest('The currently selected menu item is ' + i);
             expect(await reader.getSelectedMenuIndex(menu)).to.be(i);
             done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
             await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
             await done;
+            explainTest('After the up key, the currently selected menu item is ' + (i - 1));
             expect(await reader.getSelectedMenuIndex(menu)).to.be(i - 1);
         }
         // Check that now up and down wrap around the menu.
@@ -73,12 +86,14 @@
         await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
         await done;
         menu = reader.getSingleControl(menuButton);
+        explainTest('After the up key, the selected menu item is the last one');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
 
         done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
         await done;
         menu = reader.getSingleControl(menuButton);
+        explainTest('After the down key, the selected menu item is the first one');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
         
         // Check that Home and End keys go to start and end.
@@ -86,12 +101,14 @@
         await reader.sendSpecialKey(reader.specialKeys.END);
         await done;
         menu = reader.getSingleControl(menuButton);
+        explainTest('After the end key, the selected menu item is the last one');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
 
         done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.HOME);
         await done;
         menu = reader.getSingleControl(menuButton);
+        explainTest('After the home key, the selected menu item is the first one');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
 
         // Escape key should close the menu.
@@ -104,6 +121,7 @@
         await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
         await done;
         menu = reader.getSingleControl(menuButton);
+        explainTest('After the space key, the menu is visible');
         expect(reader.isVisible(menu)).to.be(true);
 
         // Escape key should close the menu.
@@ -115,17 +133,22 @@
         done = reader.listenForMenuOpened(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ENTER);
         await done;
+        menu = reader.getSingleControl(menuButton);
+        explainTest('After the enter key, the menu is visible');
+        expect(reader.isVisible(menu)).to.be(true);
 
         // Escape key should close the menu.
         done = reader.listenForMenuClosed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
 
-
         // Down arrow should open the menu.
         done = reader.listenForMenuOpened(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
         await done;
+        menu = reader.getSingleControl(menuButton);
+        explainTest('After the down key, the menu is visible');
+        expect(reader.isVisible(menu)).to.be(true);
 
         // Escape key should close the menu.
         done = reader.listenForMenuClosed(menuButton);
@@ -136,8 +159,11 @@
         done = reader.listenForMenuOpened(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
         await done;
-
         menu = reader.getSingleControl(menuButton);
+        explainTest('After the up key, the menu is visible');
+        expect(reader.isVisible(menu)).to.be(true);
+
+        explainTest('After the up key, the selected menu item is the last one');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
 
         // Finish with a closed menu.
