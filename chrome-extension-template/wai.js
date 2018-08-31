@@ -23,7 +23,8 @@
             menuItems,
             i,
             done,
-            menuSize;
+            menuSize,
+            firstMenuItemLabel;
 
         menuButton = await reader.findInPage(role, label);
 
@@ -165,6 +166,15 @@
 
         explainTest('After the up key, the selected menu item is the last one');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
+
+        menuItems = await reader.getChildren(menu, 'menuItem');
+        firstMenuItemLabel = reader.getAccessibleName(menuItems[0]);
+        done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
+        await reader.sendKey(firstMenuItemLabel[0]);
+        await done;
+
+        explainTest('After searching, the selected menu item is the first match');
+        expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
 
         // Finish with a closed menu.
         done = reader.listenForMenuClosed(menuButton);
