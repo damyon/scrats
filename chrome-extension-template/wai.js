@@ -12,9 +12,10 @@
      * @method validateMenuButtonLinks
      * @param {String} role The expected role of the menu button to validate.
      * @param {String} label The expected label text of the menu button to validate.
+     * @param {Boolean} search Check searching of menu entries.
      * @return {Boolean} true on success.
      */
-    WAI.prototype.validateMenuButtonLinks = async function(role, label) {
+    WAI.prototype.validateMenuButtonLinks = async function(role, label, search = false) {
         // Example
         // https://www.w3.org/TR/wai-aria-practices-1.1/examples/menu-button/menu-button-links.html
         var menuButton,
@@ -176,16 +177,18 @@
         explainTest('After the up key, the selected menu item is the last one');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
 
-        menuItems = await reader.getChildren(menu, 'menuItem');
-        firstMenuItemLabel = reader.getAccessibleName(menuItems[0]);
-        done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
-        await reader.sendKey(firstMenuItemLabel[0]);
-        await done;
-        // Delay for focus stuff.
-        await reader.waitForInteraction();
+        if (search) {
+            menuItems = await reader.getChildren(menu, 'menuItem');
+            firstMenuItemLabel = reader.getAccessibleName(menuItems[0]);
+            done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
+            await reader.sendKey(firstMenuItemLabel[0]);
+            await done;
+            // Delay for focus stuff.
+            await reader.waitForInteraction();
 
-        explainTest('After searching, the selected menu item is the first match');
-        expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
+            explainTest('After searching, the selected menu item is the first match');
+            expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
+        }
 
         // Finish with a closed menu.
         done = reader.listenForMenuClosed(menuButton);
