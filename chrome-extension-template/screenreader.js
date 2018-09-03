@@ -830,11 +830,15 @@
      * that may have just been triggered.
      *
      * @method waitForInteraction
+     * @param {Boolean} slow This is a slow interaction, wait longer.
      * @return {Promise}
      */
-    ScreenReader.prototype.waitForInteraction = async function() {
-        var done = await this.pause(250);
-        return done;
+    ScreenReader.prototype.waitForInteraction = async function(slow = false) {
+        var delay = 250; // Milliseconds.
+        if (slow) {
+            delay *= 4;
+        }
+        return await this.pause(delay);
     };
 
     /**
