@@ -301,7 +301,7 @@
         this.focus(wrapper);
         await wrapper._node.doDefault();
 
-        return await this.pause(800);
+        return await this.waitForInteraction();
     }
 
     /**
@@ -467,12 +467,7 @@
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyDown', windowsVirtualKeyCode: keyCodes[key][0], keyIdenfifier: keyCodes[key][1]});
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyUp', windowsVirtualKeyCode: keyCodes[key][0], keyIdenfifier: keyCodes[key][1]});
 
-        if (key == this.specialKeys.ESCAPE) {
-            // Wait a bit longer for cancel keys because we may need to wait for focus to shift.
-            await this.pause(500);
-        } else {
-            await this.pause(10);
-        }
+        await this.waitForInteraction();
 
         var complete = new Promise(function(resolve) {
             chrome.debugger.detach({ tabId: this.tabId }, resolve);
@@ -554,7 +549,7 @@
                 var sentKey = await this.sendKey(text[i]);
             }
         }
-        return await this.pause(500);
+        return await this.waitForInteraction();
     };
 
     /**
@@ -828,6 +823,18 @@
             }
         }
         return selectedIndex;
+    };
+
+    /**
+     * Use a standard delay to account for async tasks
+     * that may have just been triggered.
+     *
+     * @method waitForInteraction
+     * @return {Promise}
+     */
+    ScreenReader.prototype.waitForInteraction = async function() {
+        var done = await this.pause(250);
+        return done;
     };
 
     /**

@@ -172,6 +172,8 @@
         done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendKey(firstMenuItemLabel[0]);
         await done;
+        // Delay for focus stuff.
+        await reader.waitForInteraction();
 
         explainTest('After searching, the selected menu item is the first match');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
