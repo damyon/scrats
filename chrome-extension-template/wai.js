@@ -156,6 +156,15 @@
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
 
+        // Escape key again should not open the menu again.
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
+        await reader.waitForInteraction();
+        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
+
+        explainTest('The menu is still closed after escape key was pressed twice');
+        expect(ariaExpanded).to.be('false');
+
         // Up arrow should open the menu and select the last item..
         done = reader.listenForMenuOpened(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);

@@ -60,7 +60,7 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout)
                         // Launch chrome with the extension.
                         var args = [
                             '--user-data-dir=' + profileDir,
-                            '--load-extension=' + extensionDir,
+                            '--disable-extensions-except=' + extensionDir,
                             '--no-first-run',
                             '--enable-logging',
                             '--v=0',
