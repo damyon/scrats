@@ -25,7 +25,7 @@
             i,
             done,
             menuSize,
-            firstMenuItemLabel;
+            searchMenuItemLabel;
 
         menuButton = await reader.findInPage(role, label);
 
@@ -87,6 +87,7 @@
         done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
         await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
         await done;
+        await reader.pause(3000);
         menu = reader.getSingleControl(menuButton);
         explainTest('After the up key, the selected menu item is the last one');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
@@ -179,15 +180,27 @@
 
         if (search) {
             menuItems = await reader.getChildren(menu, 'menuItem');
-            firstMenuItemLabel = reader.getAccessibleName(menuItems[0]);
+            searchMenuItemLabel = reader.getAccessibleName(menuItems[0]);
             done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
-            await reader.sendKey(firstMenuItemLabel[0]);
+            await reader.sendKey(searchMenuItemLabel[0]);
             await done;
             // Delay for focus stuff.
             await reader.waitForInteraction();
 
-            explainTest('After searching, the selected menu item is the first match');
+            explainTest('After searching, the selected menu item is the first menu item');
             expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
+
+            if (menuItems.length > 1) {
+                searchMenuItemLabel = reader.getAccessibleName(menuItems[1]);
+                done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
+                await reader.sendKey(searchMenuItemLabel[0]);
+                await done;
+                // Delay for focus stuff.
+                await reader.waitForInteraction();
+
+                explainTest('After searching, the selected menu item is the second menu item');
+                expect(await reader.getSelectedMenuIndex(menu)).to.be(1);
+            }
         }
 
         // Finish with a closed menu.
