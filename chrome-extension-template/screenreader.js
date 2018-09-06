@@ -294,7 +294,7 @@
      */
     ScreenReader.prototype._next = function(node, role, name, skipChild, skipThis) {
         let result = false;
-        if (node === null || typeof node === "undefined") {
+        if (node === null || typeof node === 'undefined') {
             return false;
         }
         if (!skipThis && node.matches(this._mapSearchAttributes(role, name))) {
@@ -426,6 +426,9 @@
     ScreenReader.prototype.getAccessibleName = function(wrapper) {
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
+        }
+        if (typeof wrapper._node.name == 'undefined') {
+            return null;
         }
         return wrapper._node.name;
     };
