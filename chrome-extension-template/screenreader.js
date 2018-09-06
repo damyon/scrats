@@ -120,7 +120,7 @@
      * @return {Object} A standard structure used to pass search parameters.
      */
     ScreenReader.prototype._mapSearchAttributes = function(role, name) {
-        var attributes = { };
+        let attributes = { };
         if ((typeof name != 'undefined') && name != '') {
             attributes.name = name;
         }
@@ -136,13 +136,14 @@
      * @return {NodeWrapper} A wrapper for the AutomationNode
      */
     ScreenReader.prototype.findInPage = async function(role, name) {
-        var page = await this._getPage();
+        let page = await this._getPage(),
+            result;
 
         if (page === null) {
             throw Error('page is not available');
         }
 
-        var result = page.find(this._mapSearchAttributes(role, name));
+        result = page.find(this._mapSearchAttributes(role, name));
         if (result !== undefined && result !== null) {
             result = new NodeWrapper(result);
         }
@@ -158,13 +159,14 @@
      * @return {Boolean} True if a node exists.
      */
     ScreenReader.prototype.existsInPage = async function(role, name) {
-        var page = await this._getPage();
+        let page = await this._getPage(),
+            result;
 
         if (page === null) {
             throw Error('page is not available');
         }
 
-        var result = page.find(this._mapSearchAttributes(role, name));
+        result = page.find(this._mapSearchAttributes(role, name));
         if (result !== undefined && result !== null) {
             return true;
         }
@@ -181,15 +183,17 @@
      * @return {NodeWrapper} The search result.
      */
     ScreenReader.prototype.find = function(wrapper, role, name) {
+        let result;
+
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
         }
-        var result = wrapper._node.find(this._mapSearchAttributes(role, name));
+        result = wrapper._node.find(this._mapSearchAttributes(role, name));
         if (result !== undefined && result !== null) {
             result = new NodeWrapper(result);
         }
         return result;
-    }
+    };
 
     /**
      * Search the given node for a list of automation nodes and return them.
@@ -201,13 +205,15 @@
      * @return {NodeWrapper[]} A list of node wrappers.
      */
     ScreenReader.prototype.findAll = function(wrapper, role, name) {
+        let nodes,
+            results = [],
+            i,
+            node;
+
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
         }
-        var nodes = wrapper._node.findAll(this._mapSearchAttributes(role, name));
-        var results = [];
-        var i;
-        var node;
+        nodes = wrapper._node.findAll(this._mapSearchAttributes(role, name));
 
         for (i = 0; i < nodes.length; i++) {
             node = nodes[i];
@@ -217,7 +223,39 @@
             }
         }
         return results;
-    }
+    };
+
+    /**
+     * Search the page for a list of automation nodes and return them.
+     *
+     * @method findAllInPage
+     * @param {String} role
+     * @param {String} name
+     * @return {NodeWrapper[]} A list of node wrappers.
+     */
+    ScreenReader.prototype.findAllInPage = async function(role, name) {
+        let page = await this._getPage(),
+            nodes,
+            results = [],
+            i,
+            node;
+
+        if (page === null) {
+            throw Error('page is not available');
+        }
+
+        nodes = page.findAll(this._mapSearchAttributes(role, name));
+
+        for (i = 0; i < nodes.length; i++) {
+            node = nodes[i];
+
+            if (node != null) {
+                results[results.length] = new NodeWrapper(node);
+            }
+        }
+        return results;
+    };
+
 
     /**
      * From the given starting point search for the next occurance of the given node.
@@ -231,15 +269,16 @@
      * @return {NodeWrapper} The next matching node.
      */
     ScreenReader.prototype.next = function(wrapper, role, name) {
+        let result;
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
         }
-        var result = this._next(wrapper._node, role, name, false, true);
+        result = this._next(wrapper._node, role, name, false, true);
         if (result) {
             return new NodeWrapper(result);
         }
         return null;
-    }
+    };
 
     /**
      * Internal function used to search for the next node.
@@ -254,7 +293,7 @@
      * @return {AutomationNode} The next matching node.
      */
     ScreenReader.prototype._next = function(node, role, name, skipChild, skipThis) {
-        var result = false;
+        let result = false;
         if (node === null || typeof node === "undefined") {
             return false;
         }
@@ -271,7 +310,7 @@
             }
         }
         return result;
-    }
+    };
 
     /**
      * Shift focus to the given node.
@@ -288,7 +327,7 @@
         wrapper._node.focus();
 
         return true;
-    }
+    };
 
     /**
      * Peform the default action on the given node.
@@ -302,7 +341,7 @@
         await wrapper._node.doDefault();
 
         return await this.waitForInteraction();
-    }
+    };
 
     /**
      * Is this node focusable?
@@ -398,7 +437,7 @@
      * @return {Boolean} true
      */
     ScreenReader.prototype.debugPrintTree = async function() {
-        var page = await this._getPage();
+        let page = await this._getPage();
 
         logDebug(page + '');
         return true;
@@ -412,7 +451,7 @@
      * @return {Boolean} true
      */
     ScreenReader.prototype.debugPrintNode = function(wrapper) {
-        var output = '';
+        let output = '';
 
         if (this.isEmpty(wrapper)) {
             logDebug('null');
@@ -450,7 +489,8 @@
      * @return {Promise} resolved when the key is sent.
      */
     ScreenReader.prototype.sendSpecialKey = async function(key) {
-        var keyCodes = [];
+        let keyCodes = [],
+            complete;
 
         keyCodes[this.specialKeys.TAB] = [9, "U+0009"];
         keyCodes[this.specialKeys.ENTER] = [13, "U+000D"];
@@ -469,7 +509,7 @@
 
         await this.waitForInteraction();
 
-        var complete = new Promise(function(resolve) {
+        complete = new Promise(function(resolve) {
             chrome.debugger.detach({ tabId: this.tabId }, resolve);
         });
 
@@ -484,11 +524,13 @@
      * @return {Promise} resolved when the key is sent.
      */
     ScreenReader.prototype.sendKey = async function(key) {
+        let complete;
+
         chrome.debugger.attach({ tabId: this.tabId }, "1.0");
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyDown', text : key });
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyUp', text : key });
 
-        var complete = new Promise(function(resolve) {
+        complete = new Promise(function(resolve) {
             chrome.debugger.detach({ tabId: this.tabId }, resolve);
         });
 
@@ -502,7 +544,7 @@
      * @return {Promise} resolved with the url for the page as a string.
      */
     ScreenReader.prototype.getPageUrl = async function() {
-        var page = await this._getPage();
+        let page = await this._getPage();
 
         return page.docUrl;
     };
@@ -516,7 +558,7 @@
      * @return {String} The attribute value
      */
     ScreenReader.prototype.getAttributeValue = function(wrapper, attributeName) {
-        var attributes;
+        let attributes;
 
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
@@ -539,14 +581,16 @@
      * @return {Promise} resolved when the text is sent.
      */
     ScreenReader.prototype.enterText = async function(wrapper, text) {
+        let i,
+            sentKey;
+
         this.focus(wrapper);
 
         if (wrapper._node.role == 'textField') {
             wrapper._node.setValue(text);
         } else {
-            var i = 0;
             for (i = 0; i < text.length; i++) {
-                var sentKey = await this.sendKey(text[i]);
+                sentKey = await this.sendKey(text[i]);
             }
         }
         return await this.waitForInteraction();
@@ -574,7 +618,7 @@
      * @return {NodeWrapper} The matching child.
      */
     ScreenReader.prototype.getChild = async function(wrapper, role) {
-        var result;
+        let result;
 
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
@@ -599,7 +643,10 @@
      * @return {NodeWrapper} The matching node.
      */
     ScreenReader.prototype.getFlowFrom = async function(wrapper) {
-        var flowFrom, results, i, node;
+        let flowFrom,
+            results,
+            i,
+            node;
 
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
@@ -629,7 +676,10 @@
      * @return {NodeWrapper} The matching node.
      */
     ScreenReader.prototype.getFlowTo = async function(wrapper) {
-        var flowTo, results, i, node;
+        let flowTo,
+            results,
+            i,
+            node;
 
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
@@ -659,7 +709,7 @@
      * @return {NodeWrapper} The matching node.
      */
     ScreenReader.prototype.getNextFocus = async function(wrapper) {
-        var nextFocus;
+        let nextFocus;
 
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
@@ -681,7 +731,7 @@
      * @return {NodeWrapper} The matching node.
      */
     ScreenReader.prototype.getSingleControl = function(wrapper) {
-        var controlledList = this.getControls(wrapper);
+        let controlledList = this.getControls(wrapper);
         expect(controlledList.length).to.be(1);
         return controlledList.pop();
     };
@@ -694,7 +744,10 @@
      * @return {NodeWrapper[]} A list of node wrappers.
      */
     ScreenReader.prototype.getControls = function(wrapper) {
-        var controls, results, i, node;
+        let controls,
+            results,
+            i,
+            node;
 
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
@@ -724,15 +777,16 @@
      * @return {Promise} Resolved when we get an event on the button and the menu is closed.
      */
     ScreenReader.prototype.waitForMenuClosed = async function(menuButton) {
-        var p, pollDelay = 200;
+        let p,
+            pollDelay = 200;
 
         if (this.isEmpty(menuButton)) {
             throw Error('Menu button is null');
         }
 
         p = new Promise(function(resolve, reject) {
-            var awaitChange = function() {
-                var ariaExpanded;
+            let awaitChange = function() {
+                let ariaExpanded;
 
                 ariaExpanded = this.getAttributeValue(menuButton, 'aria-expanded');
                 if (ariaExpanded != 'true') {
@@ -756,15 +810,16 @@
      * @return {Promise} Resolved when we get an event on the button and the menu is opened.
      */
     ScreenReader.prototype.waitForMenuOpened = async function(menuButton) {
-        var p, pollDelay = 200;
+        let p,
+            pollDelay = 200;
 
         if (this.isEmpty(menuButton)) {
             throw Error('Menu button is null');
         }
 
         p = new Promise(function(resolve, reject) {
-            var awaitChange = function() {
-                var ariaExpanded;
+            let awaitChange = function() {
+                let ariaExpanded;
 
                 ariaExpanded = this.getAttributeValue(menuButton, 'aria-expanded');
                 if (ariaExpanded == 'true') {
@@ -797,7 +852,7 @@
         }
 
         return new Promise(function(resolve, reject) {
-            var stopListening = function(event) {
+            let stopListening = function(event) {
                 wrapper._node.removeEventListener(type, stopListening);
                 resolve(event);
             };
@@ -813,8 +868,9 @@
      * @return {Number} The number of the focused menu item.
      */
     ScreenReader.prototype.getSelectedMenuIndex = async function(menu) {
-        var i = 0, selectedIndex = -1;
-        var menuItems = await this.getChildren(menu, 'menuItem');
+        let i = 0,
+            selectedIndex = -1,
+            menuItems = await this.getChildren(menu, 'menuItem');
 
         for (i = 0; i < menuItems.length; i++) {
             menuItem = menuItems[i];
@@ -852,7 +908,7 @@
      * @return {Promise}
      */
     ScreenReader.prototype.waitForInteraction = async function(slow = false) {
-        var delay = 250; // Milliseconds.
+        let delay = 250; // Milliseconds.
         if (slow) {
             delay *= 4;
         }
@@ -868,7 +924,10 @@
      * @return {NodeWrapper[]} A list of node wrappers.
      */
     ScreenReader.prototype.getChildren = async function(wrapper, role) {
-        var children, results, i, node;
+        let children,
+            results,
+            i,
+            node;
 
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');

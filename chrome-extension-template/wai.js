@@ -18,7 +18,7 @@
     WAI.prototype.validateMenuButtonLinks = async function(role, label, search = false) {
         // Example
         // https://www.w3.org/TR/wai-aria-practices-1.1/examples/menu-button/menu-button-links.html
-        var menuButton,
+        let menuButton,
             ariaExpanded,
             menu,
             menuItems,
@@ -192,7 +192,7 @@
 
             if (menuItems.length > 1) {
                 searchMenuItemLabel = reader.getAccessibleName(menuItems[1]);
-                done = reader.startListening(menu, chrome.automation.EventType.FOCUS);
+                done = reader.waitForFocusChange(menu);
                 await reader.sendKey(searchMenuItemLabel[0]);
                 await done;
                 // Delay for focus stuff.
@@ -222,7 +222,7 @@
     WAI.prototype.validateBreadcrumb = async function(label) {
         // Example
         // https://www.w3.org/TR/wai-aria-practices-1.1/examples/breadcrumb/index.html
-        var navigation,
+        let navigation,
             list,
             listItems,
             listItem,
