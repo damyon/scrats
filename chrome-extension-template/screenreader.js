@@ -719,11 +719,11 @@
     /**
      * Get a promise that will be resolved when the menu controlled by this button is closed.
      *
-     * @method listenForMenuClosed
+     * @method waitForMenuClosed
      * @param {NodeWrapper} menuButton The button that controls the menu.
      * @return {Promise} Resolved when we get an event on the button and the menu is closed.
      */
-    ScreenReader.prototype.listenForMenuClosed = async function(menuButton) {
+    ScreenReader.prototype.waitForMenuClosed = async function(menuButton) {
         var p, pollDelay = 200;
 
         if (this.isEmpty(menuButton)) {
@@ -751,11 +751,11 @@
     /**
      * Get a promise that will be resolved when the menu controlled by this button is opened.
      *
-     * @method listenForMenuOpened
+     * @method waitForMenuOpened
      * @param {NodeWrapper} menuButton The button that controls the menu.
      * @return {Promise} Resolved when we get an event on the button and the menu is opened.
      */
-    ScreenReader.prototype.listenForMenuOpened = async function(menuButton) {
+    ScreenReader.prototype.waitForMenuOpened = async function(menuButton) {
         var p, pollDelay = 200;
 
         if (this.isEmpty(menuButton)) {
@@ -780,15 +780,18 @@
         return p;
     };
 
+    
+
     /**
      * Start listining on the given node for an event.
      *
-     * @method startListening
+     * @method _startListening
+     * @private
      * @param {NodeWrapper} wrapper The node to listen on.
      * @param {String} type The event type to listen for.
      * @return {Promise} Resolved when we get an event of the given type on the node.
      */
-    ScreenReader.prototype.startListening = function(wrapper, type) {
+    ScreenReader.prototype._startListening = function(wrapper, type) {
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
         }
@@ -823,6 +826,21 @@
             }
         }
         return selectedIndex;
+    };
+
+    /**
+     * Return a promise that is resolved when the node recieves a focus event.
+     *
+     * @method waitForFocusChange
+     * @param {NoreWrapper} wrapper The node that will recieve the event.
+     * @return {Promise}
+     */
+    ScreenReader.prototype.waitForFocusChange = async function(wrapper) {
+        if (this.isEmpty(wrapper)) {
+            throw Error('node is null');
+        }
+
+        return reader._startListening(wrapper, chrome.automation.EventType.FOCUS);
     };
 
     /**
