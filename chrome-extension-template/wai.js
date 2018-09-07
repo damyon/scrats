@@ -6,6 +6,58 @@
     };
 
     /**
+     * Check all navigation containers and regions have accessible names and
+     * do not allow 2 regions in the same page with the same name.
+     * Throws an error if the validation fails.
+     *
+     * @method validatePageRegionLabels
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validatePageRegionLabels = async function() {
+        let navigations,
+            regions,
+            names,
+            i,
+            name,
+            unique,
+            hasDuplicates;
+
+        navigations = await reader.findAllInPage('navigation');
+        names = [];
+
+        for (i = 0; i < navigations.length; i++) {
+            if (reader.isVisible(navigations[i])) {
+                name = reader.getAccessibleName(navigations[i]);
+                explainTest('Navigation "' + name + '" has a non empty label');
+                expect(name).not.to.be.empty();
+                names.push(name);
+            }
+        }
+        regions = await reader.findAllInPage('region');
+        for (i = 0; i < regions.length; i++) {
+            if (reader.isVisible(regions[i])) {
+                name = reader.getAccessibleName(regions[i]);
+                explainTest('Region "' + name + '" has a non empty label');
+                expect(name).not.to.be.empty();
+                names.push(name);
+            }
+        }
+        explainTest('All labels for navigations and regions are unique');
+        unique = [];
+        duplicates = [];
+        for (i = 0; i < names.length; i++) {
+            if (unique.indexOf(names[i]) == -1) {
+                unique.push(names[i]);
+            } else {
+                duplicates.push(names[i]);
+            }
+        }
+
+        expect(duplicates).to.be.empty();
+        return true;
+    };
+
+    /**
      * Check labels and keyboard navigation for a menu of links.
      * Throws an error if the validation fails.
      *
