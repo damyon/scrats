@@ -58,6 +58,9 @@ var logDebug = function(str) {
     });
 };
 
+chrome.privacy.services.autofillEnabled.set({ value: false });
+chrome.privacy.services.passwordSavingEnabled.set({ value: false });
+
 // Listen for when the first tab is loaded and then start the test.
 chrome.tabs.onUpdated.addListener(function(tabId, info) {
     if (info.status == "complete") {
