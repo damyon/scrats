@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "scrats",
-    "version": "0.1.0",
+    "version": "dev",
     "background": {
         "scripts": [
             "expect.js",
