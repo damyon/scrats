@@ -167,12 +167,12 @@
         expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
 
         // Escape key should close the menu.
-        done = reader.waitForMenuClosed(menuButton);
+        done = reader.waitForNodeCollapsed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
 
         // Space should open the menu.
-        done = reader.waitForMenuOpened(menuButton);
+        done = reader.waitForNodeExpanded(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
         await done;
         menu = reader.getSingleControl(menuButton);
@@ -180,12 +180,12 @@
         expect(reader.isVisible(menu)).to.be(true);
 
         // Escape key should close the menu.
-        done = reader.waitForMenuClosed(menuButton);
+        done = reader.waitForNodeCollapsed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
 
         // Enter should open the menu.
-        done = reader.waitForMenuOpened(menuButton);
+        done = reader.waitForNodeExpanded(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ENTER);
         await done;
         menu = reader.getSingleControl(menuButton);
@@ -193,12 +193,12 @@
         expect(reader.isVisible(menu)).to.be(true);
 
         // Escape key should close the menu.
-        done = reader.waitForMenuClosed(menuButton);
+        done = reader.waitForNodeCollapsed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
 
         // Down arrow should open the menu.
-        done = reader.waitForMenuOpened(menuButton);
+        done = reader.waitForNodeExpanded(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
         await done;
         menu = reader.getSingleControl(menuButton);
@@ -206,7 +206,7 @@
         expect(reader.isVisible(menu)).to.be(true);
 
         // Escape key should close the menu.
-        done = reader.waitForMenuClosed(menuButton);
+        done = reader.waitForNodeCollapsed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
 
@@ -220,7 +220,7 @@
         expect(ariaExpanded).to.be('false');
 
         // Up arrow should open the menu and select the last item..
-        done = reader.waitForMenuOpened(menuButton);
+        done = reader.waitForNodeExpanded(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
         await done;
         menu = reader.getSingleControl(menuButton);
@@ -256,7 +256,7 @@
         }
 
         // Finish with a closed menu.
-        done = reader.waitForMenuClosed(menuButton);
+        done = reader.waitForNodeCollapsed(menuButton);
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
         await done;
 
@@ -339,6 +339,90 @@
         expect(pageUrl).to.be(samePageUrl);
 
         return true;
+    };
+
+    /**
+     * Check labels and accessibility of list of expandable regions.
+     *
+     * @method validateAccordion
+     * @param {NodeWrapper} The node that represents the title of the accordion.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateAccordion = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/accordion/accordion.html
+        let first,
+            last,
+            next,
+            region,
+            button;
+
+        first = reader.next(wrapper, "heading", "");
+        explainTest('The accordion has at least one expandable region');
+        expect(reader.isEmpty(first)).to.be(false);
+        last = first;
+
+        next = reader.next(last, "heading", "");
+        while (!reader.isEmpty(next)) {
+            last = next;
+            next = reader.next(next, "heading", "");
+        }
+
+        // Expand the first section.
+        button = reader.next(first, "button", "");
+        reader.focus(button);
+        explainTest('The accordion heading has a button');
+        expect(reader.isEmpty(button)).to.be(false);
+
+        if (!reader.isExpanded(button)) {
+            explainTest('We can expand the first region');
+            done = reader.waitForNodeExpanded(button);
+            await reader.sendSpecialKey(reader.specialKeys.ENTER);
+            await done;
+        }
+
+        region = reader.getSingleControl(button);
+        explainTest('The first button controls a visible region');
+        expect(reader.isVisible(region)).to.be(true);
+        
+        next = reader.next(first, "heading", "");
+        while (!reader.isEmpty(next)) {
+            // Down moves to the next header.
+            await reader.waitForInteraction();
+            await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+            button = reader.next(next, "button", "");
+
+            explainTest('The accordion heading has a button');
+            expect(reader.isEmpty(button)).to.be(false);
+
+            explainTest('The next region is not expanded');
+            expect(reader.isExpanded(button)).to.be(false);
+
+            explainTest('Space expands the region');
+            await reader.waitForInteraction();
+            reader.focus(button);
+            done = reader.waitForNodeExpanded(button);
+            await reader.doDefault(button);
+            await done;
+
+            explainTest('The button is now expanded');
+            expect(reader.isExpanded(button)).to.be(true);
+            expect(reader.getAttributeValue(button, 'aria-disabled')).to.be('true');
+            region = reader.getSingleControl(button);
+            explainTest('The button controls a visible region');
+            expect(reader.isVisible(region)).to.be(true);
+            expect(reader.getAccessibleName(region)).not.to.be('');
+
+            next = reader.next(next, "heading", "");
+        }
+        
+        done = reader.waitForFocusChange(first);
+        await reader.sendSpecialKey(reader.specialKeys.HOME);
+        await done;
+        
+        done = reader.waitForFocusChange(last);
+        await reader.sendSpecialKey(reader.specialKeys.END);
+        await done;
     };
 
     // Export this class.

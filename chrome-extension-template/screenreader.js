@@ -775,11 +775,11 @@
     /**
      * Get a promise that will be resolved when the menu controlled by this button is closed.
      *
-     * @method waitForMenuClosed
+     * @method waitForNodeCollapsed
      * @param {NodeWrapper} menuButton The button that controls the menu.
      * @return {Promise} Resolved when we get an event on the button and the menu is closed.
      */
-    ScreenReader.prototype.waitForMenuClosed = async function(menuButton) {
+    ScreenReader.prototype.waitForNodeCollapsed = async function(menuButton) {
         let p,
             pollDelay = 200;
 
@@ -808,11 +808,11 @@
     /**
      * Get a promise that will be resolved when the menu controlled by this button is opened.
      *
-     * @method waitForMenuOpened
+     * @method waitForNodeExpanded
      * @param {NodeWrapper} menuButton The button that controls the menu.
      * @return {Promise} Resolved when we get an event on the button and the menu is opened.
      */
-    ScreenReader.prototype.waitForMenuOpened = async function(menuButton) {
+    ScreenReader.prototype.waitForNodeExpanded = async function(menuButton) {
         let p,
             pollDelay = 200;
 

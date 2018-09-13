@@ -1,6 +1,6 @@
 {
   "name": "scrats",
-  "version": "dev",
+  "version": "1.0.0",
   "description": "Screenreader Acceptance Testing System",
   "main": "index.js",
   "directories": {
