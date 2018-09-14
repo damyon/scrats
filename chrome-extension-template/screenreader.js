@@ -68,6 +68,20 @@
     };
 
     /**
+     * Return true if the NoreWrapper represents an modal node.
+     *
+     * @method isModal
+     * @param {NodeWrapper} wrapper
+     * @return {Boolean}
+     */
+    ScreenReader.prototype.isModal = function(wrapper) {
+        if (this.isEmpty(wrapper)) {
+            return false;
+        }
+        return wrapper._node.modal;
+    };
+
+    /**
      * Return a resolved promise with the node that currently has focus.
      *
      * @method getFocus
@@ -777,8 +791,22 @@
      * @method waitForAlert
      * @return {Promise} resolved to the alert node when the alert has been seen.
      */
+    ScreenReader.prototype.waitForAlertDialog = async function() {
+        return this._startListeningForChanges("allTreeChanges", chrome.automation.RoleType.ALERT_DIALOG, "").then(function(change) {
+            let node = new NodeWrapper(change.target);
+            expect(this.isVisible(node)).to.be(true);
+            return node;
+        }.bind(this));
+    };
+
+    /**
+     * Return a resolved promise when we have seen an alert region updated.
+     *
+     * @method waitForAlert
+     * @return {Promise} resolved to the alert node when the alert has been seen.
+     */
     ScreenReader.prototype.waitForAlert = async function() {
-        return this._startListeningForChanges("liveRegionTreeChanges", "alert", "").then(function(change) {
+        return this._startListeningForChanges("liveRegionTreeChanges", chrome.automation.RoleType.ALERT, "").then(function(change) {
             let node = new NodeWrapper(change.target);
             expect(this.isVisible(node)).to.be(true);
             return node;
