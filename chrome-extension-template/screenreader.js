@@ -88,9 +88,8 @@
      * @return {Promise} The resolved promise will accept the title of the page as a string.
      */
     ScreenReader.prototype.getPageTitle = async function() {
-        return this._getPage().then((page) => {
-            return page.name;
-        });
+        let page = await this._getPage();
+        return page.name;
     };
 
     /**
@@ -773,6 +772,20 @@
     };
 
     /**
+     * Return a resolved promise when we have seen an alert region updated.
+     *
+     * @method waitForAlert
+     * @return {Promise} resolved to the alert node when the alert has been seen.
+     */
+    ScreenReader.prototype.waitForAlert = async function() {
+        return this._startListeningForChanges("liveRegionTreeChanges", "alert", "").then(function(change) {
+            let node = new NodeWrapper(change.target);
+            expect(this.isVisible(node)).to.be(true);
+            return node;
+        }.bind(this));
+    };
+
+    /**
      * Get a promise that will be resolved when the menu controlled by this button is closed.
      *
      * @method waitForNodeCollapsed
@@ -838,18 +851,38 @@
         return p;
     };
 
-    
+    /**
+     * Start listening on the given node for a change.
+     *
+     * @method _startListeningForChanges
+     * @private
+     * @param {String} type The change type to listen for:
+     *    "noTreeChanges", "liveRegionTreeChanges", "textMarkerChanges", or "allTreeChanges"
+     * @return {Promise} Resolved when we get an event of the given type on the node.
+     */
+    ScreenReader.prototype._startListeningForChanges = function(type, role, name) {
+        return new Promise(function(resolve, reject) {
+            let stopListening = function(change) {
+                let node = change.target;
+                if (node.matches(this._mapSearchAttributes(role, name))) {
+                    chrome.automation.removeTreeChangeObserver(stopListening);
+                    resolve(change);
+                }
+            }.bind(this);
+            chrome.automation.addTreeChangeObserver(type, stopListening);
+        }.bind(this));
+    };
 
     /**
-     * Start listining on the given node for an event.
+     * Start listening on the given node for an event.
      *
-     * @method _startListening
+     * @method _startListeningForEvents
      * @private
      * @param {NodeWrapper} wrapper The node to listen on.
      * @param {String} type The event type to listen for.
      * @return {Promise} Resolved when we get an event of the given type on the node.
      */
-    ScreenReader.prototype._startListening = function(wrapper, type) {
+    ScreenReader.prototype._startListeningForEvents = function(wrapper, type) {
         if (this.isEmpty(wrapper)) {
             throw Error('node is null');
         }
@@ -904,8 +937,8 @@
         expect(elements).to.not.be.empty();
 
         for (i = 0; i < elements.length; i++) {
-            if (reader.isVisible(elements[i])) {
-                name = reader.getAccessibleName(elements[i]);
+            if (this.isVisible(elements[i])) {
+                name = this.getAccessibleName(elements[i]);
                 explainTest('Element "' + name + '" has a non empty label');
                 expect(name).not.to.be.empty();
                 names.push(name);
@@ -938,7 +971,7 @@
             throw Error('node is null');
         }
 
-        return reader._startListening(wrapper, chrome.automation.EventType.FOCUS);
+        return this._startListeningForEvents(wrapper, chrome.automation.EventType.FOCUS);
     };
 
     /**
