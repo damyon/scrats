@@ -82,6 +82,8 @@
 
         explainTest('The menu has menu entries');
         expect(menuItems.length).not.to.be(0);
+        explainTest('The menu entries have unique labels');
+        await reader.expectUniqueLabels(menuItems);
         menuSize = menuItems.length;
 
         // Use the down arrow key to navigate through all the menu items.
@@ -252,7 +254,8 @@
             lastCurrent = false,
             ariaCurrent,
             pageUrl,
-            samePageUrl;
+            samePageUrl,
+            links = [];
 
         navigation = await reader.findInPage("navigation", label);
 
@@ -269,8 +272,7 @@
 
         // Verify we have some entries in the list.
         explainTest('The list of breadcrumbs is not empty');
-        expect(listItems.length).not.to.be(0);
-
+        expect(listItems).not.to.be.empty();
         // Get the url of the current page.
         pageUrl = await reader.getPageUrl();
 
@@ -280,6 +282,7 @@
             // See if it contains a link.
             navLink = await reader.find(listItem, 'link');
             if (navLink) {
+                links.push(navLink);
                 // See if it the current page.
                 ariaCurrent = reader.getAttributeValue(navLink, 'aria-current');
                 if (ariaCurrent == 'page') {
@@ -292,6 +295,9 @@
                 lastCurrent = false;
             }
         }
+        explainTest('Each breadcrumb has a unique label');
+        await reader.expectUniqueLabels(links);
+
         // Verify only the last link in the breadcrumbs was marked as the current page.
         explainTest('The last link in the breadcrumbs has represents the current page');
         expect(lastCurrent).to.be(true);
