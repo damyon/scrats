@@ -888,6 +888,45 @@
     };
 
     /**
+     * Ensure unique labels.
+     *
+     * @method expectUniqueLabels
+     * @param {Array} elements Array if node wrappers for each element.
+     * @return {Boolean} true if the labels are all distinct.
+     */
+    ScreenReader.prototype.expectUniqueLabels = function(elements) {
+        let i = 0,
+            name = '',
+            names = [],
+            unique = [],
+            duplicates = [];
+        explainTest('List of elements is not empty');
+        expect(elements).to.not.be.empty();
+
+        for (i = 0; i < elements.length; i++) {
+            if (reader.isVisible(elements[i])) {
+                name = reader.getAccessibleName(elements[i]);
+                explainTest('Element "' + name + '" has a non empty label');
+                expect(name).not.to.be.empty();
+                names.push(name);
+            }
+        }
+        explainTest('All labels for list of elements are unique');
+        unique = [];
+        duplicates = [];
+        for (i = 0; i < names.length; i++) {
+            if (unique.indexOf(names[i]) == -1) {
+                unique.push(names[i]);
+            } else {
+                duplicates.push(names[i]);
+            }
+        }
+
+        expect(duplicates).to.be.empty();
+        return true;
+    };
+
+    /**
      * Return a promise that is resolved when the node recieves a focus event.
      *
      * @method waitForFocusChange

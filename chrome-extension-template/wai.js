@@ -15,45 +15,14 @@
      */
     WAI.prototype.validatePageRegionLabels = async function() {
         let navigations,
-            regions,
-            names,
-            i,
-            name,
-            unique,
-            hasDuplicates;
+            name;
 
         navigations = await reader.findAllInPage('navigation');
-        names = [];
+        await reader.expectUniqueLabels(navigations);
 
-        for (i = 0; i < navigations.length; i++) {
-            if (reader.isVisible(navigations[i])) {
-                name = reader.getAccessibleName(navigations[i]);
-                explainTest('Navigation "' + name + '" has a non empty label');
-                expect(name).not.to.be.empty();
-                names.push(name);
-            }
-        }
         regions = await reader.findAllInPage('region');
-        for (i = 0; i < regions.length; i++) {
-            if (reader.isVisible(regions[i])) {
-                name = reader.getAccessibleName(regions[i]);
-                explainTest('Region "' + name + '" has a non empty label');
-                expect(name).not.to.be.empty();
-                names.push(name);
-            }
-        }
-        explainTest('All labels for navigations and regions are unique');
-        unique = [];
-        duplicates = [];
-        for (i = 0; i < names.length; i++) {
-            if (unique.indexOf(names[i]) == -1) {
-                unique.push(names[i]);
-            } else {
-                duplicates.push(names[i]);
-            }
-        }
+        await reader.expectUniqueLabels(regions);
 
-        expect(duplicates).to.be.empty();
         return true;
     };
 
@@ -355,18 +324,23 @@
             last,
             next,
             region,
-            button;
+            button,
+            all = [];
 
         first = reader.next(wrapper, "heading", "");
         explainTest('The accordion has at least one expandable region');
         expect(reader.isEmpty(first)).to.be(false);
         last = first;
+        all.push(first);
 
         next = reader.next(last, "heading", "");
         while (!reader.isEmpty(next)) {
             last = next;
+            all.push(next);
             next = reader.next(next, "heading", "");
         }
+
+        await reader.expectUniqueLabels(all);
 
         // Expand the first section.
         button = reader.next(first, "button", "");
