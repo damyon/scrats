@@ -5,8 +5,22 @@ var Rmdir = require('rmdir');
 var spawn = require('child_process').spawn;
 var copyDir = require('recursive-copy');
 var installDir = require('get-installed-path');
+var settings = require('user-settings');
 
 var MAX_EXECUTION_TIME = 60000;
+exports.persistChrome = function(chrome) {
+    // Remember some options between runs.
+    var file = settings.file('.scrats');
+    if (chrome.length == 0) {
+        chrome = file.get('chrome');
+    } else {
+        file.set('chrome', chrome);
+    }
+    if (chrome.length == 0) {
+        chrome = '/usr/bin/google-chrome-unstable';
+    }
+    return chrome;
+};
 
 exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout) {
     console.log('# Execute test suite: ' + feature + ' on site: ' + url);

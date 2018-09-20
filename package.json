@@ -35,7 +35,8 @@
     "promise": "^7.1.1",
     "recursive-copy": "^2.0.6",
     "rmdir": "^1.2.0",
-    "tmp": "0.0.31"
+    "tmp": "0.0.31",
+    "user-settings": "^0.2.0"
   },
   "bin": {
     "scrats": "./index.js"
