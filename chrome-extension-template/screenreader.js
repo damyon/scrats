@@ -520,8 +520,8 @@
         keyCodes[this.specialKeys.ESCAPE] = [27, "U+001B"];
     
         chrome.debugger.attach({ tabId: this.tabId }, "1.0");
-        chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyDown', windowsVirtualKeyCode: keyCodes[key][0], keyIdenfifier: keyCodes[key][1]});
-        chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyUp', windowsVirtualKeyCode: keyCodes[key][0], keyIdenfifier: keyCodes[key][1]});
+        chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyDown', windowsVirtualKeyCode: keyCodes[key][0], code: keyCodes[key][0], keyIdenfifier: keyCodes[key][1], isSystemKey: true});
+        chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyUp', windowsVirtualKeyCode: keyCodes[key][0], code: keyCodes[key][0], keyIdenfifier: keyCodes[key][1], isSystemKey: true});
 
         await this.waitForInteraction();
 
@@ -784,6 +784,21 @@
         }
         return results;
     };
+
+    /**
+     * Return a resolved promise when we have seen hide event.
+     *
+     * @method waitForHideAction
+     * @return {Promise} resolved to the node that was hidden.
+     */
+    ScreenReader.prototype.waitForHideAlertDialog = async function() {
+        return this._startListeningForChanges("allTreeChanges", chrome.automation.RoleType.ALERT_DIALOG, "").then(function(change) {
+            let node = new NodeWrapper(change.target);
+            expect(change.type).to.be("nodeRemoved");
+            return node;
+        }.bind(this));
+    };
+
 
     /**
      * Return a resolved promise when we have seen an alert region updated.

@@ -317,6 +317,46 @@
     };
 
     /**
+     * Check an alert dialog opened from a button.
+     *
+     * @method validateAlertDialog
+     * @param {String} triggerLabel The name of the button to open the dialog
+     * @param {String} cancelLabel The name of the button to cancel the dialog
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateAlertDialog = async function(triggerLabel, cancelLabel) {
+        let trigger, done, modal, cancel;
+
+        explainTest('Open the dialog');
+        trigger = await reader.findInPage('button', triggerLabel);
+        done = reader.waitForAlertDialog();
+        await reader.doDefault(trigger);
+        modal = await done;
+        expect(reader.isModal(modal)).to.be(true);
+        expect(reader.getAccessibleName(modal)).to.not.be('');
+
+        explainTest('Close it with the cancel button');
+        done = reader.waitForHideAlertDialog();
+        cancel = await reader.find(modal, 'button', cancelLabel);
+        await reader.doDefault(cancel);
+        await done;
+
+        explainTest('Open it again');
+        trigger = await reader.findInPage('button', triggerLabel);
+        done = reader.waitForAlertDialog();
+        await reader.doDefault(trigger);
+        modal = await done;
+        expect(reader.isModal(modal)).to.be(true);
+        expect(reader.getAccessibleName(modal)).to.not.be('');
+
+        explainTest('Close it with the escape key');
+        cancel = await reader.find(modal, 'button', cancelLabel);
+        // ESCAPE NOT WORKING
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        expect(reader.isVisible(modal)).to.be(false);
+    };
+
+    /**
      * Check labels and accessibility of list of expandable regions.
      *
      * @method validateAccordion
