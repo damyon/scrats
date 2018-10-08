@@ -10,9 +10,17 @@ var settings = require('user-settings');
 var MAX_EXECUTION_TIME = 60000;
 exports.persistChrome = function(chrome) {
     // Remember some options between runs.
-    var file = settings.file('.scrats');
+    let file = settings.file('.scrats');
+    let savedValue = '';
+
+    if ((typeof chrome) == 'undefined') {
+        chrome = '';
+    }
     if (chrome.length == 0) {
-        chrome = file.get('chrome');
+        savedValue = file.get('chrome');
+        if (typeof savedValue != 'undefined') {
+            chrome = savedValue;
+        }
     } else {
         file.set('chrome', chrome);
     }
