@@ -437,6 +437,20 @@
     };
 
     /**
+     * Get the checked state of this node.
+     *
+     * @method getChecked
+     * @param {NodeWrapper} wrapper Wrapper for the node to focus on.
+     * @return {String} The checked state
+     */
+    ScreenReader.prototype.getChecked = function(wrapper) {
+        if (this.isEmpty(wrapper)) {
+            return false;
+        }
+        return wrapper._node.checked;
+    };
+
+    /**
      * Get the expanded state of the current node.
      * The expanded state is only supported by some specific roles and the aria-expanded attribute
      * is used in some situations instead.

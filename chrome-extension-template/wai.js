@@ -27,6 +27,82 @@
     };
 
     /**
+     * Check accesibility for a mixed checkbox controling a list of single checkboxes.
+     *
+     * @method validateMixedCheckbox
+     * @param {NodeWrapper} The node that represents the mixed state checkbox.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateMixedCheckbox = async function(wrapper) {
+        let controls, allChecked, i, checked;
+
+        explainTest('The checkbox is labelled');
+        expect(reader.getAccessibleName(wrapper)).to.not.be('');
+        explainTest('The checkbox is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The element has the correct role (checkBox)');
+        expect(reader.getRole(wrapper)).to.be("checkBox");
+
+        controls = reader.getControls(wrapper);
+        explainTest('The element controls a list of fields');
+        expect(controls).not.to.be.empty();
+
+        // Check the group.
+        explainTest('Changing the group affects each item in the list');
+        allChecked = await reader.getChecked(wrapper);
+        if (allChecked != 'true') {
+            await reader.doDefault(wrapper);
+        }
+        allChecked = await reader.getChecked(wrapper);
+        expect(allChecked).to.be('true');
+
+        for (i = 0; i < controls.length; i++) {
+            checked = await reader.getChecked(controls[i]);
+            expect(checked).to.be('true');
+        }
+        await reader.focus(wrapper);
+        await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
+        allChecked = await reader.getChecked(wrapper);
+        expect(allChecked).to.be('false');
+
+        for (i = 0; i < controls.length; i++) {
+            checked = await reader.getChecked(controls[i]);
+            expect(checked).to.be('false');
+        }
+        explainTest('Changing one item in the group sets the group to a mixed state');
+        await reader.doDefault(controls[0]);
+        checked = await reader.getChecked(controls[0]);
+        expect(checked).to.be('true');
+        allChecked = await reader.getChecked(wrapper);
+        expect(allChecked).to.be('mixed');
+
+        explainTest('Spacebar on the group cycles between true, false and mixed states');
+
+        await reader.focus(wrapper);
+        await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
+        await reader.waitForInteraction();
+        allChecked = await reader.getChecked(wrapper);
+        expect(allChecked).to.be('true');
+
+        await reader.focus(wrapper);
+        await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
+        await reader.waitForInteraction();
+        allChecked = await reader.getChecked(wrapper);
+        expect(allChecked).to.be('false');
+
+        await reader.focus(wrapper);
+        await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
+        await reader.waitForInteraction();
+        allChecked = await reader.getChecked(wrapper);
+        expect(allChecked).to.be('mixed');
+
+        explainTest('When mixed state is restored, the checked state of the items matches the last mixed state');
+
+        checked = await reader.getChecked(controls[0]);
+        expect(checked).to.be('true');
+        return true;
+    };
+    /**
      * Check labels attributes for a checkbox.
      *
      * @method validateCheckbox
@@ -42,7 +118,7 @@
         explainTest('The checkbox is visible');
         expect(reader.isVisible(wrapper)).to.be(true);
 
-        explainTest('The button has the correct role (checkBox)');
+        explainTest('The element has the correct role (checkBox)');
         expect(reader.getRole(wrapper)).to.be("checkBox");
 
         explainTest('The checkbox can be focused');
