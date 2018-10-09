@@ -27,6 +27,42 @@
     };
 
     /**
+     * Check labels attributes for a checkbox.
+     *
+     * @method validateCheckbox
+     * @param {NodeWrapper} The node that represents the checkbox.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateCheckbox = async function(wrapper) {
+        let checked = false,
+            toggleChecked = false;
+
+        explainTest('The checkbox is labelled');
+        expect(reader.getAccessibleName(wrapper)).to.not.be('');
+        explainTest('The checkbox is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+
+        explainTest('The button has the correct role (checkBox)');
+        expect(reader.getRole(wrapper)).to.be("checkBox");
+
+        explainTest('The checkbox can be focused');
+        expect(reader.isFocusable(wrapper)).to.be(true);
+
+        explainTest('The checkbox can be toggled');
+        checked = await reader.getAttributeValue(wrapper, 'aria-checked');
+        await reader.doDefault(wrapper);
+        toggleChecked = await reader.getAttributeValue(wrapper, 'aria-checked');
+        expect(checked).not.to.be(toggleChecked);
+
+        explainTest('The checkbox can be toggled back');
+        await reader.doDefault(wrapper);
+        toggleChecked = await reader.getAttributeValue(wrapper, 'aria-checked');
+        expect(checked).to.be(toggleChecked);
+
+        return true;
+    };
+
+    /**
      * Check labels attributes for a button.
      *
      * @method validateButton
