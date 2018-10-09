@@ -94,7 +94,7 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout)
                             '--force-renderer-accessibility'
                         ];
 
-                        args.push('--app=' + url);
+                        args.push('' + url);
                         var process = spawn(chrome, args);
 
                         setTimeout(function() {

@@ -874,11 +874,38 @@
         }.bind(this));
     };
 
+    /**
+     * Return a resolved promise when we have seen an dialog region updated.
+     *
+     * @method waitForDialog
+     * @return {Promise} resolved to the alert node when the alert has been seen.
+     */
+    ScreenReader.prototype.waitForDialog = async function() {
+        return this._startListeningForChanges("allTreeChanges", chrome.automation.RoleType.DIALOG, "").then(function(change) {
+            let node = new NodeWrapper(change.target);
+            expect(this.isVisible(node)).to.be(true);
+            return node;
+        }.bind(this));
+    };
+
+    /**
+     * Return a resolved promise when we have seen hide event.
+     *
+     * @method waitForHideAction
+     * @return {Promise} resolved to the node that was hidden.
+     */
+    ScreenReader.prototype.waitForHideDialog = async function() {
+        return this._startListeningForChanges("allTreeChanges", chrome.automation.RoleType.DIALOG, "").then(function(change) {
+            let node = new NodeWrapper(change.target);
+            expect(change.type).to.be("nodeRemoved");
+            return node;
+        }.bind(this));
+    };
 
     /**
      * Return a resolved promise when we have seen an alert region updated.
      *
-     * @method waitForAlert
+     * @method waitForAlertDialog
      * @return {Promise} resolved to the alert node when the alert has been seen.
      */
     ScreenReader.prototype.waitForAlertDialog = async function() {

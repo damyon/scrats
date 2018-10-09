@@ -27,6 +27,45 @@
     };
 
     /**
+     * Check accesibility for a disclosure.
+     *
+     * @method validateDisclosure
+     * @param {NodeWrapper} The node that represents the trigger.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateDisclosure = async function(wrapper) {
+        let ariaExpanded;
+
+        explainTest('The button is labelled');
+        expect(reader.getAccessibleName(wrapper)).to.not.be('');
+        explainTest('The button is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The element has the correct role (button)');
+        expect(reader.getRole(wrapper)).to.be("button");
+
+        ariaExpanded = await reader.getAttributeValue(wrapper, 'aria-expanded');
+
+        explainTest('The disclosure is initially closed');
+        expect(ariaExpanded).to.be('false');
+        await reader.doDefault(wrapper);
+
+        ariaExpanded = await reader.getAttributeValue(wrapper, 'aria-expanded');
+        explainTest('The disclosure is now open');
+        expect(ariaExpanded).to.be('true');
+
+        controls = reader.getControls(wrapper);
+        explainTest('The element controls a list of fields');
+        expect(controls).not.to.be.empty();
+        expect(reader.isVisible(controls[0])).to.be(true);
+        await reader.doDefault(wrapper);
+        ariaExpanded = await reader.getAttributeValue(wrapper, 'aria-expanded');
+        explainTest('The disclosure is now closed');
+        expect(ariaExpanded).to.be('false');
+        
+        return true;
+    };
+
+    /**
      * Check accesibility for a mixed checkbox controling a list of single checkboxes.
      *
      * @method validateMixedCheckbox
@@ -472,6 +511,52 @@
         expect(pageUrl).to.be(samePageUrl);
 
         return true;
+    };
+
+    /**
+     * Check a modal dialog opened from a button.
+     *
+     * @method validateModalDialog
+     * @param {String} triggerLabel The name of the button to open the dialog
+     * @param {String} cancelLabel The name of the button to cancel the dialog
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateModalDialog = async function(triggerLabel, cancelLabel) {
+        let trigger, done, modal, cancel;
+
+        explainTest('Open the dialog');
+        trigger = await reader.findInPage('button', triggerLabel);
+        done = reader.waitForDialog();
+        await reader.doDefault(trigger);
+        modal = await done;
+        expect(reader.isModal(modal)).to.be(true);
+        expect(reader.getAccessibleName(modal)).to.not.be('');
+
+        explainTest('Close it with the cancel button');
+        done = reader.waitForHideDialog();
+        cancel = await reader.find(modal, 'button', cancelLabel);
+        await reader.doDefault(cancel);
+        await done;
+
+        explainTest('Open it again');
+        trigger = await reader.findInPage('button', triggerLabel);
+        done = reader.waitForDialog();
+        await reader.doDefault(trigger);
+        modal = await done;
+        expect(reader.isModal(modal)).to.be(true);
+        expect(reader.getAccessibleName(modal)).to.not.be('');
+
+        explainTest('Close it with the escape key');
+        cancel = await reader.find(modal, 'button', cancelLabel);
+
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+
+        explainTest('Dialog should not be visible');
+        modal = await reader.findInPage('dialog', '');
+        if (!reader.isEmpty(modal)) {
+            expect(reader.isVisible(modal)).to.be(false);
+        }
+
     };
 
     /**
