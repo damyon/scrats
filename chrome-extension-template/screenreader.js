@@ -554,6 +554,28 @@
     };
 
     /**
+     * Set the url of the current page.
+     *
+     * @method setPageUrl
+     * @param {String} url The new url for the current page.
+     * @return {Promise} resolved when the page has loaded.
+     */
+    ScreenReader.prototype.setPageUrl = async function(url) {
+        let complete;
+
+        complete = new Promise(function(resolve) {
+            let loaded = async function() {
+                await this.waitForInteraction(true);
+                this.waitForPage().then(() => {
+                    resolve();
+                });
+            }.bind(this);
+            chrome.tabs.update(this.tabId, {url: url}, loaded);
+        }.bind(this));
+        return complete;
+    };
+
+    /**
      * Get the url of the current page.
      *
      * @method getPageUrl

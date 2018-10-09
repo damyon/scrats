@@ -39,6 +39,10 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout)
         timeout = 60000;
     }
 
+    if (typeof url == 'undefined') {
+        url = 'about:blank';
+    }
+
     dataset.forEach((state) => {
         chain = chain.then(function() {
             return new Promise(function(resolve, reject) {
