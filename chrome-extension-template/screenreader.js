@@ -294,6 +294,44 @@
     };
 
     /**
+     * Get the parent of the current node.
+     *
+     * @method parent
+     * @param {NodeWrapper} wrapper The search starting point.
+     * @return {NodeWrapper} The parent matching node.
+     */
+    ScreenReader.prototype.parent = function(wrapper) {
+        let result;
+        if (this.isEmpty(wrapper)) {
+            throw Error('node is null');
+        }
+        result = wrapper._node.parent;
+        if (result) {
+            return new NodeWrapper(result);
+        }
+        return null;
+    };
+
+    /**
+     * Get the last child of the current node.
+     *
+     * @method lastChild
+     * @param {NodeWrapper} wrapper The search starting point.
+     * @return {NodeWrapper} The parent matching node.
+     */
+    ScreenReader.prototype.lastChild = function(wrapper) {
+        let result;
+        if (this.isEmpty(wrapper)) {
+            throw Error('node is null');
+        }
+        result = wrapper._node.lastChild;
+        if (result) {
+            return new NodeWrapper(result);
+        }
+        return null;
+    };
+
+    /**
      * Internal function used to search for the next node.
      *
      * @method _next

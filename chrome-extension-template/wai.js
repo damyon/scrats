@@ -27,6 +27,52 @@
     };
 
     /**
+     * Check labels attributes for a button.
+     *
+     * @method validateButton
+     * @param {NodeWrapper} The node that represents the button.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateButton = async function(wrapper) {
+        explainTest('The button is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The button has the correct role (button)');
+        expect(reader.getRole(wrapper)).to.be("button");
+        explainTest('The button can be focused');
+        expect(reader.isFocusable(wrapper)).to.be(true);
+        return true;
+    };
+
+    /**
+     * Check labels attributes for a toggle button.
+     *
+     * @method validateToggleButton
+     * @param {NodeWrapper} The node that represents the button.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateToggleButton = async function(wrapper) {
+        let pressed = false, togglePressed = false;
+
+        explainTest('The button is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The button has the correct role (toggleButton)');
+        expect(reader.getRole(wrapper)).to.be("toggleButton");
+        explainTest('The button can be focused');
+        expect(reader.isFocusable(wrapper)).to.be(true);
+        explainTest('The button can be toggled');
+        pressed = await reader.getAttributeValue(wrapper, 'aria-pressed');
+        await reader.doDefault(wrapper);
+        togglePressed = await reader.getAttributeValue(wrapper, 'aria-pressed');
+        expect(pressed).not.to.be(togglePressed);
+        explainTest('The button can be toggled back');
+        await reader.doDefault(wrapper);
+        togglePressed = await reader.getAttributeValue(wrapper, 'aria-pressed');
+        expect(pressed).to.be(togglePressed);
+
+        return true;
+    };
+
+    /**
      * Check labels and keyboard navigation for a menu of links.
      * Throws an error if the validation fails.
      *
