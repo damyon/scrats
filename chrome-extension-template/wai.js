@@ -351,9 +351,14 @@
 
         explainTest('Close it with the escape key');
         cancel = await reader.find(modal, 'button', cancelLabel);
-        // ESCAPE NOT WORKING
+
         await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
-        expect(reader.isVisible(modal)).to.be(false);
+
+        explainTest('Dialog should not be visible');
+        modal = await reader.findInPage('alertdialog', '');
+        if (!reader.isEmpty(modal)) {
+            expect(reader.isVisible(modal)).to.be(false);
+        }
     };
 
     /**
