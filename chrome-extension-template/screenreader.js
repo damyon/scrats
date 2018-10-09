@@ -520,8 +520,8 @@
         keyCodes[this.specialKeys.ESCAPE] = [27, "U+001B"];
     
         chrome.debugger.attach({ tabId: this.tabId }, "1.0");
-        chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyDown', windowsVirtualKeyCode: keyCodes[key][0], code: keyCodes[key][0], keyIdenfifier: keyCodes[key][1], isSystemKey: true});
-        chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyUp', windowsVirtualKeyCode: keyCodes[key][0], code: keyCodes[key][0], keyIdenfifier: keyCodes[key][1], isSystemKey: true});
+        chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyDown', windowsVirtualKeyCode: keyCodes[key][0], keyIdenfifier: keyCodes[key][1], isSystemKey: true});
+        chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyUp', windowsVirtualKeyCode: keyCodes[key][0], keyIdenfifier: keyCodes[key][1], isSystemKey: true});
 
         await this.waitForInteraction();
 

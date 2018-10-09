@@ -431,15 +431,18 @@
             region = reader.getSingleControl(button);
             explainTest('The button controls a visible region');
             expect(reader.isVisible(region)).to.be(true);
+            explainTest('The region has a label');
             expect(reader.getAccessibleName(region)).not.to.be('');
 
             next = reader.next(next, "heading", "");
         }
         
+        explainTest('The home key focuses on the first entry');
         done = reader.waitForFocusChange(first);
         await reader.sendSpecialKey(reader.specialKeys.HOME);
         await done;
         
+        explainTest('The end key focuses on the first entry');
         done = reader.waitForFocusChange(last);
         await reader.sendSpecialKey(reader.specialKeys.END);
         await done;
