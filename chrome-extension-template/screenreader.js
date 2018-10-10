@@ -546,7 +546,9 @@
         SPACEBAR: 7,
         HOME: 8,
         END: 9,
-        ESCAPE: 10
+        ESCAPE: 10,
+        PAGE_UP: 11,
+        PAGE_DOWN: 12
     };
 
     /**
@@ -570,6 +572,8 @@
         keyCodes[this.specialKeys.HOME] = [36, "U+0024"];
         keyCodes[this.specialKeys.END] = [35, "U+0023"];
         keyCodes[this.specialKeys.ESCAPE] = [27, "U+001B"];
+        keyCodes[this.specialKeys.PAGE_UP] = [33, "U+0021"];
+        keyCodes[this.specialKeys.PAGE_DOWN] = [34, "U+0022"];
     
         chrome.debugger.attach({ tabId: this.tabId }, "1.0");
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'rawKeyDown', windowsVirtualKeyCode: keyCodes[key][0], keyIdenfifier: keyCodes[key][1], isSystemKey: true});

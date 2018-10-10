@@ -66,6 +66,62 @@
     };
 
     /**
+     * Check the accessibility of the feed.
+     *
+     * @method validateFeed
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateFeed = async function(wrapper) {
+        let articles, i, article, size, position, firstIndex, secondIndex;
+
+        explainTest('The feed is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The element has the correct role (feed)');
+        expect(reader.getRole(wrapper)).to.be("feed");
+        await reader.waitForInteraction(true);
+
+        explainTest('The feed contains a list of articles');
+        articles = await reader.findAll(wrapper, 'article');
+        expect(articles).not.to.be.empty();
+
+        for (i = 0; i < articles.length; i++) {
+            article = articles[i];
+            explainTest('The article is labelled');
+            expect(reader.getAccessibleName(article)).to.not.be('');
+            explainTest('The article is focusable');
+            expect(reader.isFocusable(article)).to.be(true);
+            size = await reader.getAttributeValue(article, 'aria-setsize');
+            position = await reader.getAttributeValue(article, 'aria-posinset');
+            
+            explainTest('The article is numbered correctly in the list');
+            expect(position).to.be('' + (i + 1));
+            explainTest('The list has the correct number of elements');
+            expect(size).to.be('' + articles.length);
+        }
+
+        explainTest('The feed supports keyboard navigation');
+        articles = await reader.findAll(wrapper, 'article');
+        if (articles.length > 1) {
+            explainTest('Move focus to the first article');
+            await reader.focus(articles[0]);
+            await reader.waitForInteraction(true);
+            expect(reader.isFocused(articles[0])).to.be(true);
+            
+            explainTest('Move focus to the second article');
+            await reader.sendSpecialKey(reader.specialKeys.PAGE_DOWN);
+            await reader.waitForInteraction(true);
+            expect(reader.isFocused(articles[1])).to.be(true);
+
+            explainTest('Move focus back to the first article');
+            await reader.sendSpecialKey(reader.specialKeys.PAGE_UP);
+            await reader.waitForInteraction(true);
+            expect(reader.isFocused(articles[0])).to.be(true);
+        }
+
+        return true;
+    };
+
+    /**
      * Check accesibility for a mixed checkbox controling a list of single checkboxes.
      *
      * @method validateMixedCheckbox
