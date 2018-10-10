@@ -66,9 +66,30 @@
     };
 
     /**
+     * Check the accessibility of the link.
+     *
+     * @method validateLink
+     * @param {NodeWrapper} The node that we are testing.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateLink = async function(wrapper) {
+        let articles, i, article, size, position, firstIndex, secondIndex;
+
+        explainTest('The link is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The element has the correct role (link)');
+        expect(reader.getRole(wrapper)).to.be("link");
+        explainTest('The link is focusable');
+        expect(reader.isFocusable(wrapper)).to.be(true);
+        explainTest('The link is labelled');
+        expect(reader.getAccessibleName(wrapper)).to.not.be('');
+    };
+
+    /**
      * Check the accessibility of the feed.
      *
      * @method validateFeed
+     * @param {NodeWrapper} The node that we are testing.
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateFeed = async function(wrapper) {
