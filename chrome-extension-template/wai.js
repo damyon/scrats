@@ -27,6 +27,106 @@
     };
 
     /**
+     * Check accessibility for a rearrangeable list box.
+     *
+     * @method validateRearrangeableListBox
+     * @param {NodeWrapper} The from list
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateRearrangeableListBox = async function(fromlist, tolist, moveto, movefrom) {
+        let movetobutton, movefrombutton, fromcount, tocount;
+
+        await reader.waitForInteraction(true);
+        await reader.focus(fromlist);
+        await reader.sendSpecialKey(reader.specialKeys.TAB);
+
+        explainTest('The from listbox is labelled');
+        expect(reader.getAccessibleName(fromlist)).to.not.be('');
+        explainTest('The from listbox is visible');
+        expect(reader.isVisible(fromlist)).to.be(true);
+        explainTest('The element has the correct role (listBox)');
+        expect(reader.getRole(fromlist)).to.be("listBox");
+
+        explainTest('The to listbox is labelled');
+        expect(reader.getAccessibleName(tolist)).to.not.be('');
+        explainTest('The to listbox is visible');
+        expect(reader.isVisible(tolist)).to.be(true);
+        explainTest('The element has the correct role (listBox)');
+        expect(reader.getRole(tolist)).to.be("listBox");
+
+        explainTest('The move to button is labelled');
+        expect(reader.getAccessibleName(moveto)).to.not.be('');
+        explainTest('The move to button is visible');
+        expect(reader.isVisible(moveto)).to.be(true);
+        explainTest('The element has the correct role (button)');
+        expect(reader.getRole(moveto)).to.be("button");
+
+        explainTest('The move from button is labelled');
+        expect(reader.getAccessibleName(movefrom)).to.not.be('');
+        explainTest('The move from button is visible');
+        expect(reader.isVisible(movefrom)).to.be(true);
+        explainTest('The element has the correct role (button)');
+        expect(reader.getRole(movefrom)).to.be("button");
+
+        explainTest('The listBox has options');
+        options = await reader.findAll(fromlist, 'listBoxOption');
+        expect(options).not.to.be.empty();
+        fromcount = options.length;
+
+        for (i = 0; i < options.length; i++) {
+            option = options[i];
+            expect(reader.getAccessibleName(option)).to.not.be('');
+            expect(reader.isVisible(option)).to.be(true);
+            expect(reader.isFocusable(option)).to.be(true);
+        }
+        await reader.focus(fromlist);
+        explainTest('The listbox is controllable with the keyboard');
+        explainTest('The down arrow selected the next option');
+        await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+        option = await reader.getActiveDescendant(fromlist);
+        activeName = reader.getAccessibleName(option);
+        expectedName = reader.getAccessibleName(options[1]);
+        expect(activeName).to.be(expectedName);
+        explainTest('The up arrow selected the previous option');
+        await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+        option = await reader.getActiveDescendant(fromlist);
+        activeName = reader.getAccessibleName(option);
+        expectedName = reader.getAccessibleName(options[0]);
+        expect(activeName).to.be(expectedName);
+        explainTest('The end key selected last option');
+        await reader.sendSpecialKey(reader.specialKeys.END);
+        option = await reader.getActiveDescendant(fromlist);
+        activeName = reader.getAccessibleName(option);
+        expectedName = reader.getAccessibleName(options[options.length - 1]);
+        expect(activeName).to.be(expectedName);
+        explainTest('The home key selected first option');
+        await reader.sendSpecialKey(reader.specialKeys.HOME);
+        option = await reader.getActiveDescendant(fromlist);
+        activeName = reader.getAccessibleName(option);
+        expectedName = reader.getAccessibleName(options[0]);
+        expect(activeName).to.be(expectedName);
+
+        options = await reader.findAll(tolist, 'listBoxOption');
+        tocount = options.length;
+        await reader.doDefault(moveto);
+        await reader.waitForInteraction(true);
+        explainTest('The first option was moved');
+        options = await reader.findAll(fromlist, 'listBoxOption');
+        expect(options.length).to.be(fromcount - 1);
+        options = await reader.findAll(tolist, 'listBoxOption');
+        expect(options.length).to.be(tocount + 1);
+        explainTest('The first option was moved back');
+        await reader.doDefault(movefrom);
+        await reader.waitForInteraction(true);
+        options = await reader.findAll(fromlist, 'listBoxOption');
+        expect(options.length).to.be(fromcount);
+        options = await reader.findAll(tolist, 'listBoxOption');
+        expect(options.length).to.be(tocount);
+        
+        return true;
+    };
+
+    /**
      * Check accessibility for a collapsible list box.
      *
      * @method validateCollapsibleListBox
