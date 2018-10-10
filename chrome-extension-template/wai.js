@@ -27,6 +27,63 @@
     };
 
     /**
+     * Check accessibility for a scrollable list box.
+     *
+     * @method validateScrollableListBox
+     * @param {NodeWrapper} The node that represents the element.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateScrollableListBox = async function(wrapper) {
+        let options, i, option, activeName, expectedName;
+
+        explainTest('The listbox is labelled');
+        expect(reader.getAccessibleName(wrapper)).to.not.be('');
+        explainTest('The listbox is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The element has the correct role (listBox)');
+        expect(reader.getRole(wrapper)).to.be("listBox");
+
+        explainTest('The listBox has options');
+        options = await reader.findAll(wrapper, 'listBoxOption');
+        expect(options).not.to.be.empty();
+
+        for (i = 0; i < options.length; i++) {
+            option = options[i];
+            expect(reader.getAccessibleName(option)).to.not.be('');
+            expect(reader.isVisible(option)).to.be(true);
+            expect(reader.isFocusable(option)).to.be(true);
+        }
+        explainTest('The listbox is controllable with the keyboard');
+        await reader.focus(wrapper);
+        explainTest('The down arrow selected the next option');
+        await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+        option = await reader.getActiveDescendant(wrapper);
+        activeName = reader.getAccessibleName(option);
+        expectedName = reader.getAccessibleName(options[1]);
+        expect(activeName).to.be(expectedName);
+        explainTest('The up arrow selected the previous option');
+        await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+        option = await reader.getActiveDescendant(wrapper);
+        activeName = reader.getAccessibleName(option);
+        expectedName = reader.getAccessibleName(options[0]);
+        expect(activeName).to.be(expectedName);
+        explainTest('The end key selected last option');
+        await reader.sendSpecialKey(reader.specialKeys.END);
+        option = await reader.getActiveDescendant(wrapper);
+        activeName = reader.getAccessibleName(option);
+        expectedName = reader.getAccessibleName(options[options.length - 1]);
+        expect(activeName).to.be(expectedName);
+        explainTest('The home key selected first option');
+        await reader.sendSpecialKey(reader.specialKeys.HOME);
+        option = await reader.getActiveDescendant(wrapper);
+        activeName = reader.getAccessibleName(option);
+        expectedName = reader.getAccessibleName(options[0]);
+        expect(activeName).to.be(expectedName);
+
+        return true;
+    };
+
+    /**
      * Check accesibility for a disclosure.
      *
      * @method validateDisclosure

@@ -423,6 +423,21 @@
     };
 
     /**
+     * Is this node selected?
+     *
+     * @method isSelected
+     * @param {NodeWrapper} wrapper Wrapper for the node to focus on.
+     * @return {Boolean} True if we have selection on this node.
+     */
+    ScreenReader.prototype.isSelected = function(wrapper) {
+        if (this.isEmpty(wrapper)) {
+            return false;
+        }
+        logDebug(wrapper._node.state);
+        return wrapper._node.state.selected === true;
+    };
+
+    /**
      * Get the role of this node. The roles are stored in the accessibility tree.
      *
      * @method getRole
@@ -830,6 +845,24 @@
         expect(controlledList.length).to.be(1);
         return controlledList.pop();
     };
+
+    /**
+     * Get the active descendant of the specified node.
+     *
+     * @method getActiveDescendant
+     * @param {NodeWrapper} wrapper The node to start from.
+     * @return {NodeWrapper} The matching node.
+     */
+    ScreenReader.prototype.getActiveDescendant = function(wrapper) {
+        let result = wrapper._node.activeDescendant;
+
+        if (result == null) {
+            throw Error('node has no descendant');
+        }
+
+        return new NodeWrapper(result);
+    };
+
 
     /**
      * Get the list of nodes this one controls.
