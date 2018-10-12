@@ -1088,11 +1088,11 @@
     ScreenReader.prototype.getSelectedMenuIndex = async function(menu) {
         let i = 0,
             selectedIndex = -1,
-            menuItems = await this.getChildren(menu, 'menuItem');
+            menuItems = await this.findAll(menu, 'menuItem');
 
         for (i = 0; i < menuItems.length; i++) {
             menuItem = menuItems[i];
-            expect(this.getRole(menuItem)).to.be("menuItem");
+            //expect(this.getRole(menuItem)).to.be("menuItem");
             expect(this.getAccessibleName(menuItem)).not.to.be('');
             expect(this.isFocusable(menuItem)).to.be(true);
             if (this.isFocused(menuItem)) {
