@@ -556,7 +556,9 @@
         expect(ariaExpanded).to.be('false');
 
         // First we will action the button
+        await reader.waitForInteraction(true);
         await reader.doDefault(menuButton);
+        await reader.waitForInteraction(true);
 
         // Now the menu should be expanded.
         ariaExpanded = reader.getAttributeValue(menuButton, 'aria-expanded');
