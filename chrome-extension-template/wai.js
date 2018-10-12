@@ -572,7 +572,7 @@
         explainTest('The menu has the correct role (menu)');
         expect(reader.getRole(menu)).to.be("menu");
 
-        menuItems = await reader.getChildren(menu, 'menuItem');
+        menuItems = await reader.findAll(menu, 'menuItem');
 
         explainTest('The menu has menu entries');
         expect(menuItems.length).not.to.be(0);
@@ -609,11 +609,11 @@
         explainTest('After the up key, the selected menu item is the last one');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
 
+        explainTest('After the down key, the selected menu item is the first one');
         done = reader.waitForFocusChange(menu);
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
         await done;
         menu = reader.getSingleControl(menuButton);
-        explainTest('After the down key, the selected menu item is the first one');
         expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
         
         // Check that Home and End keys go to start and end.
@@ -696,7 +696,7 @@
         expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
 
         if (search) {
-            menuItems = await reader.getChildren(menu, 'menuItem');
+            menuItems = await reader.findAll(menu, 'menuItem');
             searchMenuItemLabel = reader.getAccessibleName(menuItems[0]);
             done = reader.waitForFocusChange(menu);
             await reader.sendKey(searchMenuItemLabel[0]);
