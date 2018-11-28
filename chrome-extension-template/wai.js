@@ -530,6 +530,150 @@
      * @param {Boolean} search Check searching of menu entries.
      * @return {Boolean} true on success.
      */
+    WAI.prototype.validateMenuBar = async function(role, label, search = false) {
+        // Example
+        // http://www.w3.org/TR/wai-aria-practices-1.1/examples/menubar/menubar-1/menubar-1.html
+        let menuBar,
+            menuItems,
+            menuSubItems,
+            menuSize,
+            menu,
+            i,
+            done;
+
+        menuBar = await reader.findInPage(role, label);
+
+        explainTest('The menu bar can be found with role: "' + role + '" and label: "' + label + '"');
+        menuItems = await reader.findAll(menuBar, 'menuItem');
+        explainTest('The menu has menu entries');
+        expect(menuItems.length).not.to.be(0);
+        explainTest('The menu entries have unique labels');
+        await reader.expectUniqueLabels(menuItems);
+        menuSize = menuItems.length;
+
+        reader.focus(menuItems[0]);
+        await reader.waitForInteraction();
+
+        // Use the right arrow key to navigate through all the menu items.
+        for (i = 0; i < menuItems.length - 1; i++) {
+
+            explainTest('The currently selected menu item is ' + i);
+            expect(await reader.getSelectedMenuIndex(menuBar)).to.be(i);
+            done = reader.waitForFocusChange(menuBar);
+            await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+            await done;
+            explainTest('After the right key, the currently selected menu item is ' + (i + 1));
+            expect(await reader.getSelectedMenuIndex(menuBar)).to.be(i + 1);
+        }
+        // Press the left arrow to move back.
+        for (i = menuItems.length - 1; i > 0; i--) {
+            explainTest('The currently selected menu item is ' + i);
+            expect(await reader.getSelectedMenuIndex(menuBar)).to.be(i);
+            done = reader.waitForFocusChange(menuBar);
+            await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+            await done;
+            explainTest('After the left key, the currently selected menu item is ' + (i - 1));
+            expect(await reader.getSelectedMenuIndex(menuBar)).to.be(i - 1);
+        }
+        // Check that now left and right wrap around the menu.
+        done = reader.waitForFocusChange(menuBar);
+        await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+        await done;
+        await reader.pause(3000);
+        menuBar = await reader.findInPage(role, label);
+        explainTest('After the left key, the selected menu item is the last one');
+        expect(await reader.getSelectedMenuIndex(menuBar)).to.be(menuSize - 1);
+
+        explainTest('After the right key, the selected menu item is the first one');
+        done = reader.waitForFocusChange(menuBar);
+        await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+        await done;
+        menuBar = await reader.findInPage(role, label);
+        expect(await reader.getSelectedMenuIndex(menuBar)).to.be(0);
+
+        explainTest('After the down key, the menu is opened');
+        done = reader.waitForFocusChange(menuBar);
+        await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+        await done;
+
+        ariaExpanded = await reader.getAttributeValue(menuItems[0], 'aria-expanded');
+        explainTest('The menu is now opened');
+        expect(ariaExpanded).to.be('true');
+
+        done = reader.waitForNodeCollapsed(menuItems[0]);
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
+
+        ariaExpanded = await reader.getAttributeValue(menuItems[0], 'aria-expanded');
+        explainTest('The menu is now closed');
+        expect(ariaExpanded).to.be('false');
+
+        // Space should open the menu.
+        done = reader.waitForNodeExpanded(menuItems[0]);
+        await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
+        await done;
+
+        ariaExpanded = await reader.getAttributeValue(menuItems[0], 'aria-expanded');
+        explainTest('The menu is now opened');
+        expect(ariaExpanded).to.be('true');
+
+        menu = await reader.findInPage('menu', '');
+        menuSubItems = await reader.findAll(menu, 'menuItem');
+        menuSize = menuSubItems.length;
+        explainTest('The menu has menu entries');
+        expect(menuSubItems.length).not.to.be(0);
+
+        // Use the down arrow key to navigate through all the menu items.
+        for (i = 0; i < menuSubItems.length - 1; i++) {
+
+            explainTest('The currently selected menu item is ' + i);
+            expect(await reader.getSelectedMenuIndex(menu)).to.be(i);
+            done = reader.waitForFocusChange(menu);
+            await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+            await done;
+            explainTest('After the down key, the currently selected menu item is ' + (i + 1));
+            expect(await reader.getSelectedMenuIndex(menu)).to.be(i + 1);
+        }
+        // Press the left arrow to move back.
+        for (i = menuSubItems.length - 1; i > 0; i--) {
+            explainTest('The currently selected menu item is ' + i);
+            expect(await reader.getSelectedMenuIndex(menu)).to.be(i);
+            done = reader.waitForFocusChange(menu);
+            await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+            await done;
+            explainTest('After the up key, the currently selected menu item is ' + (i - 1));
+            expect(await reader.getSelectedMenuIndex(menu)).to.be(i - 1);
+        }
+        // Check that now left and right wrap around the menu.
+        done = reader.waitForFocusChange(menu);
+        await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+        await done;
+        await reader.pause(3000);
+        menu = await reader.findInPage('menu', '');
+        explainTest('After the up key, the selected menu item is the last one');
+        expect(await reader.getSelectedMenuIndex(menu)).to.be(menuSize - 1);
+
+        explainTest('After the down key, the selected menu item is the first one');
+        done = reader.waitForFocusChange(menu);
+        await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+        await done;
+        menu = await reader.findInPage('menu', '');
+        expect(await reader.getSelectedMenuIndex(menu)).to.be(0);
+
+        return true;
+    };
+
+
+    /**
+     * Check labels and keyboard navigation for a menu of links.
+     * Throws an error if the validation fails.
+     *
+     * @method validateMenuButtonLinks
+     * @param {String} role The expected role of the menu button to validate.
+     * @param {String} label The expected label text of the menu button to validate.
+     * @param {Boolean} search Check searching of menu entries.
+     * @return {Boolean} true on success.
+     */
     WAI.prototype.validateMenuButtonLinks = async function(role, label, search = false) {
         // Example
         // https://www.w3.org/TR/wai-aria-practices-1.1/examples/menu-button/menu-button-links.html
