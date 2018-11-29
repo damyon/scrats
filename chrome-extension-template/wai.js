@@ -872,6 +872,204 @@
         return true;
     };
 
+    /**
+     * Check labels and keyboard navigation for a menu managed with active descendant.
+     * Throws an error if the validation fails.
+     *
+     * @method validateMenuButtonActiveDescendant
+     * @param {String} role The expected role of the menu button to validate.
+     * @param {String} label The expected label text of the menu button to validate.
+     * @param {Boolean} search Check searching of menu entries.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateMenuButtonActiveDescendant = async function(role, label, search = false) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/menu-button/menu-button-actions.html
+        let menuButton,
+            ariaExpanded,
+            menu,
+            menuItems,
+            activeItem,
+            i,
+            done,
+            menuSize,
+            searchMenuItemLabel;
+
+        menuButton = await reader.findInPage(role, label);
+
+        explainTest('The menu button can be found with role: "' + role + '" and label: "' + label + '"');
+
+        await reader.focus(menuButton);
+
+        // Check the menu is closed until we act on the button.
+        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
+
+        explainTest('The menu is initially closed');
+        expect(ariaExpanded).to.be('false');
+
+        // First we will action the button
+        await reader.waitForInteraction(true);
+        await reader.doDefault(menuButton);
+        await reader.waitForInteraction(true);
+
+        // Now the menu should be expanded.
+        ariaExpanded = reader.getAttributeValue(menuButton, 'aria-expanded');
+        explainTest('The menu is expanded when the button is actioned');
+        expect(ariaExpanded).to.be('true');
+        
+        // The menu should now be findable from aria-controls.
+        menu = reader.getSingleControl(menuButton);
+
+        // The role of the menu should be "menu"
+        explainTest('The menu is visible');
+        expect(reader.isVisible(menu)).to.be(true);
+        explainTest('The menu has the correct role (menu)');
+        expect(reader.getRole(menu)).to.be("menu");
+
+        menuItems = await reader.findAll(menu, 'menuItem');
+
+        explainTest('The menu has menu entries');
+        expect(menuItems.length).not.to.be(0);
+        explainTest('The menu entries have unique labels');
+        await reader.expectUniqueLabels(menuItems);
+        menuSize = menuItems.length;
+
+        // Use the down arrow key to navigate through all the menu items.
+        for (i = 0; i < menuItems.length - 1; i++) {
+            explainTest('The currently selected menu item is ' + i);
+            expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(i);
+            await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+            await reader.waitForInteraction();
+            explainTest('After the down key, the currently selected menu item is ' + (i + 1));
+            expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(i + 1);
+        }
+        // Press the up arrow to move back.
+        for (i = menuItems.length - 1; i > 0; i--) {
+            explainTest('The currently selected menu item is ' + i);
+            expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(i);
+            await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+            await reader.waitForInteraction();
+            explainTest('After the up key, the currently selected menu item is ' + (i - 1));
+            expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(i - 1);
+        }
+        // Check that now up and down wrap around the menu.
+        await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+        await reader.waitForInteraction();
+        await reader.pause(3000);
+        menu = reader.getSingleControl(menuButton);
+        explainTest('After the up key, the selected menu item is the last one');
+        expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(menuSize - 1);
+
+        explainTest('After the down key, the selected menu item is the first one');
+        await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+        await reader.waitForInteraction();
+        menu = reader.getSingleControl(menuButton);
+        expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(0);
+        
+        // Check that Home and End keys go to start and end.
+        await reader.sendSpecialKey(reader.specialKeys.END);
+        await reader.waitForInteraction();
+        menu = reader.getSingleControl(menuButton);
+        explainTest('After the end key, the selected menu item is the last one');
+        expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(menuSize - 1);
+
+        await reader.sendSpecialKey(reader.specialKeys.HOME);
+        await reader.waitForInteraction();
+        menu = reader.getSingleControl(menuButton);
+        explainTest('After the home key, the selected menu item is the first one');
+        expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(0);
+
+        // Escape key should close the menu.
+        done = reader.waitForNodeCollapsed(menuButton);
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
+
+        // Space should open the menu.
+        done = reader.waitForNodeExpanded(menuButton);
+        await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
+        await done;
+        menu = reader.getSingleControl(menuButton);
+        explainTest('After the space key, the menu is visible');
+        expect(reader.isVisible(menu)).to.be(true);
+
+        // Escape key should close the menu.
+        done = reader.waitForNodeCollapsed(menuButton);
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
+
+        // Enter should open the menu.
+        done = reader.waitForNodeExpanded(menuButton);
+        await reader.sendSpecialKey(reader.specialKeys.ENTER);
+        await done;
+        menu = reader.getSingleControl(menuButton);
+        explainTest('After the enter key, the menu is visible');
+        expect(reader.isVisible(menu)).to.be(true);
+
+        // Escape key should close the menu.
+        done = reader.waitForNodeCollapsed(menuButton);
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
+
+        // Down arrow should open the menu.
+        done = reader.waitForNodeExpanded(menuButton);
+        await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+        await done;
+        menu = reader.getSingleControl(menuButton);
+        explainTest('After the down key, the menu is visible');
+        expect(reader.isVisible(menu)).to.be(true);
+
+        // Escape key should close the menu.
+        done = reader.waitForNodeCollapsed(menuButton);
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
+
+        // Escape key again should not open the menu again.
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
+        await reader.waitForInteraction();
+        ariaExpanded = await reader.getAttributeValue(menuButton, 'aria-expanded');
+
+        explainTest('The menu is still closed after escape key was pressed twice');
+        expect(ariaExpanded).to.be('false');
+
+        // Up arrow should open the menu and select the last item..
+        done = reader.waitForNodeExpanded(menuButton);
+        await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+        await done;
+        menu = reader.getSingleControl(menuButton);
+        explainTest('After the up key, the menu is visible');
+        expect(reader.isVisible(menu)).to.be(true);
+
+        explainTest('After the up key, the selected menu item is the last one');
+        expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(menuSize - 1);
+
+        if (search) {
+            menuItems = await reader.findAll(menu, 'menuItem');
+            searchMenuItemLabel = reader.getAccessibleName(menuItems[0]);
+            await reader.sendKey(searchMenuItemLabel[0]);
+            await reader.waitForInteraction();
+
+            explainTest('After searching, the selected menu item is the first menu item');
+            expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(0);
+
+            if (menuItems.length > 1) {
+                searchMenuItemLabel = reader.getAccessibleName(menuItems[1]);
+                await reader.sendKey(searchMenuItemLabel[0]);
+                await reader.waitForInteraction();
+
+                explainTest('After searching, the selected menu item is the second menu item');
+                expect(await reader.getMenuActiveDescendantIndex(menu)).to.be(1);
+            }
+        }
+
+        // Finish with a closed menu.
+        done = reader.waitForNodeCollapsed(menuButton);
+        await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+        await done;
+
+        return true;
+    };
+
 
     /**
      * Check labels and keyboard navigation for a menu of links.

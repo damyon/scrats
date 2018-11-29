@@ -1081,6 +1081,32 @@
     /**
      * Walk the menu items in a menu and find the index of the selected entry.
      *
+     * @method getMenuActiveDescendantIndex
+     * @param {NodeWrapper} menu The node of the menu.
+     * @return {Number} The number of the focused menu item.
+     */
+    ScreenReader.prototype.getMenuActiveDescendantIndex = async function(menu) {
+        let i = 0,
+            selectedIndex = -1,
+            menuItems = await this.findAll(menu, 'menuItem'),
+            current = await this.getActiveDescendant(menu),
+            currentName = this.getAccessibleName(current),
+            itemName = '';
+
+        for (i = 0; i < menuItems.length; i++) {
+            menuItem = menuItems[i];
+            itemName = this.getAccessibleName(menuItem);
+            expect(itemName).not.to.be('');
+            if (itemName == currentName) {
+                selectedIndex = i;
+            }
+        }
+        return selectedIndex;
+    };
+
+    /**
+     * Walk the menu items in a menu and find the index of the selected entry.
+     *
      * @method getSelectedMenuIndex
      * @param {NodeWrapper} menu The node of the menu.
      * @return {Number} The number of the focused menu item.
