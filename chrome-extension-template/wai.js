@@ -1546,6 +1546,92 @@
         await done;
     };
 
+    /**
+     * Check labels and keyboard navigation for a group of radio buttons.
+     * Throws an error if the validation fails.
+     *
+     * @method validateRadioGroup
+     * @param {String} role The expected role of the menu button to validate.
+     * @param {String} label The expected label text of the menu button to validate.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateRadioGroup = async function(role, label) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/menu-button/menu-button-links.html
+        let radioGroup,
+            options,
+            checkedIndex;
+
+        radioGroup = await reader.findInPage(role, label);
+
+        explainTest('The radio group can be found with role: "' + role + '" and label: "' + label + '"');
+        expect(reader.isEmpty(radioGroup)).to.be(false);
+
+        await reader.focus(radioGroup);
+
+        options = await reader.findAll(radioGroup, 'radioButton');
+        explainTest('The radio group has options');
+        expect(options.length).not.to.be(0);
+        
+        let examineOptions = async function(options, reader, checkCount) {
+            let countChecked = 0,
+                checkedIndex = -1,
+                checked = false,
+                option;
+            
+            for (i = 0; i < options.length; i++) {
+                option = options[i];
+                checked = await reader.getAttributeValue(option, 'aria-checked');
+                if (checked == 'true') {
+                    checkedIndex = i;
+                    countChecked++;
+                }
+            }
+            if (checkCount) {
+                explainTest('There should be only one radio option checked');
+                expect(countChecked).to.be(1);
+            }
+            return checkedIndex;
+        }
+        checkedIndex = await examineOptions(options, reader, false);
+        if (checkedIndex == -1) {
+            await reader.focus(options[0]);
+            await reader.waitForInteraction(true);
+            await reader.sendSpecialKey(reader.specialKeys.ENTER);
+        }
+        checkedIndex = await examineOptions(options, reader, true);
+        while (checkedIndex < (options.length - 1)) {
+            await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+            checkedIndex = await examineOptions(options, reader, true);
+        }
+        // One more - should wrap.
+        await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+        checkedIndex = await examineOptions(options, reader, true);
+        explainTest('Focus should have wrapped to the start');
+        expect(checkedIndex).to.be(0);
+        
+        // Now go back
+        await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+        checkedIndex = await examineOptions(options, reader, true);
+        explainTest('Focus should have wrapped to the end');
+        expect(checkedIndex).to.be(options.length - 1);
+        
+        while (checkedIndex > 0) {
+            await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+            checkedIndex = await examineOptions(options, reader, true);
+        }
+        while (checkedIndex < (options.length - 1)) {
+            await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+            checkedIndex = await examineOptions(options, reader, true);
+        }
+        while (checkedIndex > 0) {
+            await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+            checkedIndex = await examineOptions(options, reader, true);
+        }
+
+        return true;
+    };
+
     // Export this class.
     window.WAI = WAI;
 }());
