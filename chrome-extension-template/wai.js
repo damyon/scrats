@@ -1632,6 +1632,106 @@
         return true;
     };
 
+    /**
+     * Check labels and keyboard navigation for a group of radio buttons.
+     * Throws an error if the validation fails.
+     *
+     * @method validateRadioGroupActiveDescendant
+     * @param {String} role The expected role of the menu button to validate.
+     * @param {String} label The expected label text of the menu button to validate.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateRadioGroupActiveDescendant = async function(role, label) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/menu-button/menu-button-links.html
+        let radioGroup,
+            options,
+            checkedIndex;
+
+        radioGroup = await reader.findInPage(role, label);
+
+        explainTest('The radio group can be found with role: "' + role + '" and label: "' + label + '"');
+        expect(reader.isEmpty(radioGroup)).to.be(false);
+
+        await reader.focus(radioGroup);
+
+        options = await reader.findAll(radioGroup, 'radioButton');
+        explainTest('The radio group has options');
+        expect(options.length).not.to.be(0);
+        
+        let examineOptions = async function(radioGroup, options, reader, checkCount) {
+            let countChecked = 0,
+                checkedIndex = -1,
+                checked = false,
+                option,
+                active,
+                activeId,
+                currentId;
+
+            active = await reader.getActiveDescendant(radioGroup);
+            activeId = await reader.getAttributeValue(active, 'id');
+            
+            for (i = 0; i < options.length; i++) {
+                option = options[i];
+                checked = await reader.getAttributeValue(option, 'aria-checked');
+                if (checked == 'true') {
+                    checkedIndex = i;
+                    countChecked++;
+                    currentId = await reader.getAttributeValue(option, 'id');
+                    expect(activeId).to.be(currentId);
+                }
+            }
+            if (checkCount) {
+                explainTest('There should be only one radio option checked');
+                expect(countChecked).to.be(1);
+            }
+            return checkedIndex;
+        }
+        checkedIndex = await examineOptions(radioGroup, options, reader, false);
+        if (checkedIndex == -1) {
+            explainTest('We should be able to choose an option.');
+            await reader.focus(radioGroup);
+            await reader.waitForInteraction(true);
+            await reader.sendSpecialKey(reader.specialKeys.SPACEBAR);
+        }
+        explainTest('We start with one option selected');
+        checkedIndex = await examineOptions(radioGroup, options, reader, true);
+        while (checkedIndex < (options.length - 1)) {
+            explainTest('Right arrow should select the next option');
+            await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+            checkedIndex = await examineOptions(radioGroup, options, reader, true);
+        }
+        // One more - should wrap.
+        explainTest('Right arrow should wrap to the start');
+        await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+        checkedIndex = await examineOptions(radioGroup, options, reader, true);
+        expect(checkedIndex).to.be(0);
+        
+        // Now go back
+        explainTest('Left arrow should wrap to the end');
+        await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+        checkedIndex = await examineOptions(radioGroup, options, reader, true);
+        expect(checkedIndex).to.be(options.length - 1);
+        
+        while (checkedIndex > 0) {
+            explainTest('Left arrow should select the previous option');
+            await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+            checkedIndex = await examineOptions(radioGroup, options, reader, true);
+        }
+        while (checkedIndex < (options.length - 1)) {
+            explainTest('Down arrow should select the next option');
+            await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+            checkedIndex = await examineOptions(radioGroup, options, reader, true);
+        }
+        while (checkedIndex > 0) {
+            explainTest('Up arrow should select the previous option');
+            await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+            checkedIndex = await examineOptions(radioGroup, options, reader, true);
+        }
+
+        return true;
+    };
+
     // Export this class.
     window.WAI = WAI;
 }());
