@@ -286,6 +286,74 @@
     };
 
     /**
+     * Check the accessibility of the table.
+     *
+     * @method validateTable
+     * @param {NodeWrapper} The node that we are testing.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateTable = async function(wrapper) {
+        let rows,
+            columns,
+            rowheaders,
+            columnheaders,
+            i,
+            j,
+            row,
+            cell,
+            label;
+
+        explainTest('The table is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The element has the correct role (table)');
+        expect(reader.getRole(wrapper)).to.be("table");
+        explainTest('The table is labelled');
+        expect(reader.getAccessibleName(wrapper)).to.not.be('');
+
+        explainTest('The table has rows');
+        rows = await reader.findAll(wrapper, 'row');
+        expect(rows).not.to.be.empty();
+
+        rowheaders = [];
+        columnheaders = [];
+        for (i = 0; i < rows.length; i++) {
+            row = rows[i];
+            cell = await reader.find(row, 'rowHeader');
+            if (cell) {
+                rowheaders[i] = reader.getAccessibleName(cell);
+            }
+
+            columns = await reader.findAll(row, 'columnHeader');
+            if (columns.length > 0) {
+                for (j = 0; j < columns.length; j++) {
+                    columnheaders[j] = reader.getAccessibleName(columns[j]);
+                }
+            }
+        }
+        explainTest('The table has headers');
+        expect(columnheaders.length + rowheaders.length).to.not.be(0);
+
+        for (i = 0; i < rows.length; i++) {
+            row = rows[i];
+            cells = await reader.find(row, 'cell');
+            if (cells != null) {
+                for (j = 0; j < cells.length; j++) {
+                    cell = cells[j];
+                    label = '';
+
+                    // Check it has a label.
+                    if (typeof rowheaders[i] !== 'undefined') {
+                        label = rowheaders[i];
+                    } else if (typeof columnheaders[j] !== 'undefined') {
+                        label = columnheaders[j];
+                    }
+                    expect(label).to.not.be('');
+                }
+            }
+        }
+    };
+
+    /**
      * Check the accessibility of the link.
      *
      * @method validateLink
