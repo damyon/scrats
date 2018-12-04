@@ -1,8 +1,8 @@
 describe('WAI Aria', function() {
-  describe('Slider with orientation', function() {
+  describe('Slider Multi Thumb', function() {
     it('Slider is accessible', async function() {
         let wai,
-            url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/slider/slider-2.html',
+            url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/slider/multithumb-slider.html',
             heading,
             container,
             sliders;
@@ -17,7 +17,7 @@ describe('WAI Aria', function() {
         expect(sliders).not.to.be.empty();
 
         for (i = 0; i < sliders.length; i++) {
-            await wai.validateSlider(sliders[i], false);
+            await wai.validateSlider(sliders[i], true);
         }
     })
   })
