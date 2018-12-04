@@ -293,8 +293,6 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateLink = async function(wrapper) {
-        let articles, i, article, size, position, firstIndex, secondIndex;
-
         explainTest('The link is visible');
         expect(reader.isVisible(wrapper)).to.be(true);
         explainTest('The element has the correct role (link)');
@@ -303,6 +301,69 @@
         expect(reader.isFocusable(wrapper)).to.be(true);
         explainTest('The link is labelled');
         expect(reader.getAccessibleName(wrapper)).to.not.be('');
+    };
+
+    /**
+     * Check the accessibility of the slider.
+     *
+     * @method validateSlider
+     * @param {NodeWrapper} The node that we are testing.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateSlider = async function(wrapper) {
+        let value, min, max;
+
+        explainTest('The slider is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The element has the correct role (slider)');
+        expect(reader.getRole(wrapper)).to.be("slider");
+        explainTest('The slider is focusable');
+        expect(reader.isFocusable(wrapper)).to.be(true);
+        explainTest('The slider is labelled');
+        expect(reader.getAccessibleName(wrapper)).to.not.be('');
+
+        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+        min = await reader.getAttributeValue(wrapper, 'aria-valuemin');
+        max = await reader.getAttributeValue(wrapper, 'aria-valuemax');
+        
+        explainTest('The slider has a range and value');
+        expect(value).to.not.be('');
+        expect(min).to.not.be('');
+        expect(max).to.not.be('');
+
+        await reader.focus(wrapper);
+
+        explainTest('The slider works with end and home keys');
+        await reader.sendSpecialKey(reader.specialKeys.END);
+        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+        expect(value).to.be(max);
+        await reader.sendSpecialKey(reader.specialKeys.HOME);
+        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+        expect(value).to.be(min);
+
+        explainTest('The slider works with right and left keys');
+        await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+        expect(value).to.not.be(min);
+        await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+        expect(value).to.be(min);
+
+        explainTest('The slider works with up and down keys');
+        await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+        expect(value).to.not.be(min);
+        await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+        expect(value).to.be(min);
+
+        explainTest('The slider works with page up and page down keys');
+        await reader.sendSpecialKey(reader.specialKeys.PAGE_UP);
+        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+        expect(value).to.not.be(min);
+        await reader.sendSpecialKey(reader.specialKeys.PAGE_DOWN);
+        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+        expect(value).to.be(min);
     };
 
     /**
