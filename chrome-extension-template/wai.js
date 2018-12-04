@@ -286,6 +286,64 @@
     };
 
     /**
+     * Check the accessibility of the tab list.
+     *
+     * @method validateTablist
+     * @param {NodeWrapper} The node that we are testing.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateTablist = async function(wrapper) {
+        let tabs,
+            panel,
+            tab,
+            i,
+            selected;
+
+        explainTest('The tab list is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The element has the correct role (tablist)');
+        expect(reader.getRole(wrapper)).to.be("tabList");
+        explainTest('The tab list is labelled');
+        expect(reader.getAccessibleName(wrapper)).to.not.be('');
+
+        tabs = await reader.findAll(wrapper, 'tab');
+        expect(tabs).not.to.be.empty();
+
+        for (i = 0; i < tabs.length; i++) {
+            tab = tabs[i];
+            await reader.focus(tab);
+            
+            explainTest('The tab element has the correct role (tab)');
+            expect(reader.getRole(tab)).to.be("tab");
+            selected = await reader.getAttributeValue(tab, 'aria-selected');
+            expect(selected).to.be("true");
+            panel = reader.getControls(tab);
+            expect(panel).not.to.be.empty();
+            
+            explainTest('Right key selects the next tab');
+            await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+            selected = await reader.getAttributeValue(tab, 'aria-selected');
+
+            explainTest('Left key selects the previous tab');
+            await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+            selected = await reader.getAttributeValue(tab, 'aria-selected');
+            
+            await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+        }
+        explainTest('Home key selects the first tab');
+        await reader.sendSpecialKey(reader.specialKeys.HOME);
+        selected = await reader.getAttributeValue(tabs[0], 'aria-selected');
+        expect(selected).to.be("true");
+        
+        explainTest('End key selects the last tab');
+        await reader.sendSpecialKey(reader.specialKeys.END);
+        selected = await reader.getAttributeValue(tabs[tabs.length - 1], 'aria-selected');
+        expect(selected).to.be("true");
+
+    };
+
+
+    /**
      * Check the accessibility of the table.
      *
      * @method validateTable
