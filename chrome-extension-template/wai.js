@@ -308,9 +308,10 @@
      *
      * @method validateSlider
      * @param {NodeWrapper} The node that we are testing.
+     * @param {Boolean} Check multiple steps can be jumped with page up/down.
      * @return {Boolean} true on success.
      */
-    WAI.prototype.validateSlider = async function(wrapper) {
+    WAI.prototype.validateSlider = async function(wrapper, checkMulti = false) {
         let value, min, max;
 
         explainTest('The slider is visible');
@@ -357,13 +358,15 @@
         value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
         expect(value).to.be(min);
 
-        explainTest('The slider works with page up and page down keys');
-        await reader.sendSpecialKey(reader.specialKeys.PAGE_UP);
-        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
-        expect(value).to.not.be(min);
-        await reader.sendSpecialKey(reader.specialKeys.PAGE_DOWN);
-        value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
-        expect(value).to.be(min);
+        if (checkMulti) {
+            explainTest('The slider works with page up and page down keys');
+            await reader.sendSpecialKey(reader.specialKeys.PAGE_UP);
+            value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+            expect(value).to.not.be(min);
+            await reader.sendSpecialKey(reader.specialKeys.PAGE_DOWN);
+            value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
+            expect(value).to.be(min);
+        }
     };
 
     /**
