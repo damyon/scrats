@@ -16,6 +16,16 @@
     };
 
     /**
+     * Returns true if 2 nodes represent the same node.
+     *
+     * @method equals
+     * @return {Boolean}
+     */
+    NodeWrapper.prototype.equals = function(compare) {
+        return this._node == compare._node;
+    };
+
+    /**
      * Class that provides screen reader access.
      * @param {String} tabId
      */
@@ -184,6 +194,27 @@
             return true;
         }
         return false;
+    };
+
+    /**
+     * Search the given node for a node with a 0 tabindex.
+     *
+     * @method findByTabIndex
+     */
+    ScreenReader.prototype.findByTabIndex = function(wrapper) {
+        let result, params;
+
+        if (this.isEmpty(wrapper)) {
+            throw Error('node is null');
+        }
+        params = {};
+        params.state = { focused: true };
+
+        result = wrapper._node.find(params);
+        if (result !== undefined && result !== null) {
+            result = new NodeWrapper(result);
+        }
+        return result;
     };
 
     /**

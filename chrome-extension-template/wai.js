@@ -382,7 +382,7 @@
         explainTest('The table is visible');
         expect(reader.isVisible(wrapper)).to.be(true);
         explainTest('The element has the correct role (table)');
-        expect(reader.getRole(wrapper)).to.be("table");
+        expect(reader.getRole(wrapper)).to.be('table');
         explainTest('The table is labelled');
         expect(reader.getAccessibleName(wrapper)).to.not.be('');
 
@@ -428,6 +428,60 @@
             }
         }
     };
+
+    /**
+     * Check the accessibility of the toolbar.
+     *
+     * @method validateToolbar
+     * @param {NodeWrapper} The node that we are testing.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateToolbar = async function(wrapper) {
+        let buttons, button, previous, tabIndex, hasPopup, menu, subItems;
+
+        explainTest('The toolbar is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The element has the correct role (toolbar)');
+        expect(reader.getRole(wrapper)).to.be('toolbar');
+        explainTest('The toolbar has buttons ');
+        buttons = await reader.findAll(wrapper, 'button');
+        expect(buttons).not.to.be.empty();
+
+        button = buttons[0];
+        await reader.focus(button);
+        await reader.waitForInteraction(true);
+
+        button = await reader.findByTabIndex(wrapper);
+
+        while (button) {
+            // Start from the first button.
+            expect(reader.isFocusable(button)).to.be(true);
+
+            tabIndex = await reader.getAttributeValue(button, 'tabindex');
+            expect(tabIndex).to.be('0');
+
+            hasPopup = await reader.getAttributeValue(button, 'aria-haspopup');
+
+            // If this is a menu we should open and close it.
+            if (hasPopup == 'true') {
+                explainTest('Can open and close the menu');
+                await reader.sendSpecialKey(reader.specialKeys.ENTER);
+                await reader.waitForInteraction(true);
+                await reader.sendSpecialKey(reader.specialKeys.ESCAPE);
+                await reader.waitForInteraction(true);
+            }
+            
+            previous = button;
+            await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+            button = await reader.findByTabIndex(wrapper);
+            if (previous.equals(button)) {
+                button = null;
+            }
+        }
+
+        
+    };
+
 
     /**
      * Check the accessibility of the link.
