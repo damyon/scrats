@@ -290,9 +290,10 @@
      *
      * @method validateTablist
      * @param {NodeWrapper} The node that we are testing.
+     * @param {Boolean} Manual switching of tabs.
      * @return {Boolean} true on success.
      */
-    WAI.prototype.validateTablist = async function(wrapper) {
+    WAI.prototype.validateTablist = async function(wrapper, manual = false) {
         let tabs,
             panel,
             tab,
@@ -308,10 +309,12 @@
 
         tabs = await reader.findAll(wrapper, 'tab');
         expect(tabs).not.to.be.empty();
-
         for (i = 0; i < tabs.length; i++) {
             tab = tabs[i];
             await reader.focus(tab);
+            if (manual) {
+                await reader.sendSpecialKey(reader.specialKeys.ENTER);
+            }
             
             explainTest('The tab element has the correct role (tab)');
             expect(reader.getRole(tab)).to.be("tab");
@@ -322,21 +325,36 @@
             
             explainTest('Right key selects the next tab');
             await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+            if (manual) {
+                await reader.sendSpecialKey(reader.specialKeys.ENTER);
+            }
             selected = await reader.getAttributeValue(tab, 'aria-selected');
 
             explainTest('Left key selects the previous tab');
             await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+            if (manual) {
+                await reader.sendSpecialKey(reader.specialKeys.ENTER);
+            }
             selected = await reader.getAttributeValue(tab, 'aria-selected');
             
             await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+            if (manual) {
+                await reader.sendSpecialKey(reader.specialKeys.ENTER);
+            }
         }
         explainTest('Home key selects the first tab');
         await reader.sendSpecialKey(reader.specialKeys.HOME);
+        if (manual) {
+            await reader.sendSpecialKey(reader.specialKeys.ENTER);
+        }
         selected = await reader.getAttributeValue(tabs[0], 'aria-selected');
         expect(selected).to.be("true");
         
         explainTest('End key selects the last tab');
         await reader.sendSpecialKey(reader.specialKeys.END);
+        if (manual) {
+            await reader.sendSpecialKey(reader.specialKeys.ENTER);
+        }
         selected = await reader.getAttributeValue(tabs[tabs.length - 1], 'aria-selected');
         expect(selected).to.be("true");
 
