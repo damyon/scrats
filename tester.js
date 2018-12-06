@@ -1,6 +1,7 @@
 var Promise = require('promise');
 var Tmp = require('tmp');
-var Filesystem = require('fs-extra');
+var FileSystemExtra = require('fs-extra');
+var FileSystem = require('fs');
 var Rmdir = require('rmdir');
 var spawn = require('child_process').spawn;
 var copyDir = require('recursive-copy');
@@ -30,8 +31,8 @@ exports.persistChrome = function(chrome) {
     return chrome;
 };
 
-exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout) {
-    console.log('# Execute test suite: ' + feature + ' on site: ' + url);
+exports.run = function(url, features, chrome, verbose, scripts, dataset, timeout) {
+    console.log('# Execute test suite: ' + features + ' on site: ' + url);
 
     var chain = Promise.resolve('start');
 
@@ -54,11 +55,11 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout)
 
                     // Make the profile dir.
                     var profileDir = path + '/profile';
-                    Filesystem.mkdirSync(profileDir);
+                    FileSystemExtra.mkdirSync(profileDir);
 
                     // Make the extension dir.
                     var extensionDir = path + '/extension';
-                    Filesystem.mkdirSync(extensionDir);
+                    FileSystemExtra.mkdirSync(extensionDir);
 
                     installDir('scrats').then(function(baseDir) {
                         return baseDir;
@@ -66,13 +67,23 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout)
                         // Copy the files from the extension template to the tmp dir.
                         return copyDir(baseDir + '/chrome-extension-template', extensionDir);
                     }).then(function() {
-                        // Copy the feature file to feature.js in the extension.
-                        return Filesystem.copy(feature, extensionDir + '/feature.js');
+                        // Append all feature files in to feature.js.
+                        var filesToAppend = [],
+                            featureFile = extensionDir + '/feature.js';
+        
+                        features.forEach((feature, index) => {
+                            // FileSystem.appendFileSync(featureFile, "\nconsole.log('[DEBUG]# Feature file: \"" + feature + "\"[DEBUG]');\n");
+                            FileSystem.appendFileSync(featureFile, "\ncontext('Feature file: " + feature + "', function() {\n");
+                            FileSystem.appendFileSync(featureFile, FileSystem.readFileSync(feature));
+                            FileSystem.appendFileSync(featureFile, "});\n");
+                        });
+                        
+                        return true;
                     }).then(function() {
                         // Copy each preflight script to the extension and append to the manifest.
                         var filesToCopy = [];
                         scripts.forEach((script, index) => {
-                           filesToCopy.push(Filesystem.copy(script, extensionDir + '/preflight' + index + '.js'));
+                           filesToCopy.push(FileSystemExtra.copy(script, extensionDir + '/preflight' + index + '.js'));
                         });
                         return Promise.all(filesToCopy);
                     }).then(function() {
@@ -80,8 +91,9 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout)
 
                         var setGlobal = 'window.state = ' + JSON.stringify(state) + ';';
                         setGlobal += 'window.timeout = ' + timeout + ';';
+                        setGlobal += 'window.startUrl = "' + url + '";';
 
-                        return Filesystem.writeFile(extensionDir + '/dataset.js', setGlobal);
+                        return FileSystemExtra.writeFile(extensionDir + '/dataset.js', setGlobal);
                     }).then(function() {
                         // Launch chrome with the extension.
                         var args = [
@@ -94,7 +106,7 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout)
                             '--force-renderer-accessibility'
                         ];
 
-                        args.push('' + url);
+                        args.push('about:blank');
                         var process = spawn(chrome, args);
 
                         setTimeout(function() {
@@ -104,7 +116,7 @@ exports.run = function(url, feature, chrome, verbose, scripts, dataset, timeout)
 
                         // Handle exit.
                         process.on('close', function(code, signal) {
-                            var readFile = Promise.denodeify(Filesystem.readFile);
+                            var readFile = Promise.denodeify(FileSystemExtra.readFile);
                             var rmdir = Promise.denodeify(Rmdir);
 
                             readFile(profileDir + '/chrome_debug.log', 'utf8').then(function(data) {

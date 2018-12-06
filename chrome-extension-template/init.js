@@ -91,6 +91,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, info) {
                 mocha.run()
                     .on('suite', function(suite) {
                         logTAP('# Test suite: "' + suite.title + '". ' + suite.total() + ' test(s).');
+                        window.reader.setPageUrl(window.startUrl);
                     })
                     .on('pass', function(test) {
                         logTAP("ok " + (testNo++) + " - it " + test.title);

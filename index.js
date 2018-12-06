@@ -8,6 +8,11 @@ function increaseVerbosity(v, total) {
   return total + 1;
 }
 
+function appendFeature(file, features) {
+    features.push(file);
+    return features;
+}
+
 function appendPreflightScript(file, preflight) {
     preflight.push(file);
     return preflight;
@@ -16,7 +21,7 @@ function appendPreflightScript(file, preflight) {
 program
  .version(version)
  .usage('[options] [url]')
- .option('-f, --feature <value>', 'The feature file to run on the url')
+ .option('-f, --feature [value]', 'A feature file to run on the url.', appendFeature, [])
  .option('-t, --timeout <value>', 'The number of milliseconds for a valid timeout')
  .option('-c, --chrome <value>', 'Path to the chrome executable to run [/usr/bin/google-chrome-unstable]. This value is remembered between runs.', '')
  .option('-p, --preflight [value]', 'Path to a javascript file to pre-load before running tests.', appendPreflightScript, [])

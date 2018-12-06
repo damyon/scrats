@@ -218,6 +218,7 @@
         }
         explainTest('The listbox is controllable with the keyboard');
         await reader.focus(wrapper);
+        await reader.waitForInteraction(true);
         explainTest('The down arrow selected the next option');
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
         option = await reader.getActiveDescendant(wrapper);
@@ -262,6 +263,7 @@
         expect(reader.isVisible(wrapper)).to.be(true);
         explainTest('The element has the correct role (button)');
         expect(reader.getRole(wrapper)).to.be("button");
+        await reader.waitForInteraction(true);
 
         ariaExpanded = await reader.getAttributeValue(wrapper, 'aria-expanded');
 
@@ -512,6 +514,7 @@
     WAI.prototype.validateSlider = async function(wrapper, checkMulti = false) {
         let value, min, max;
 
+        await reader.waitForInteraction(true);
         explainTest('The slider is visible');
         expect(reader.isVisible(wrapper)).to.be(true);
         explainTest('The element has the correct role (slider)');
@@ -893,6 +896,7 @@
             done = reader.waitForFocusChange(menu);
             await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
             await done;
+            await reader.waitForInteraction(false);
             explainTest('After the down key, the currently selected menu item is ' + (i + 1));
             expect(await reader.getSelectedMenuIndex(menu)).to.be(i + 1);
         }
@@ -903,6 +907,7 @@
             done = reader.waitForFocusChange(menu);
             await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
             await done;
+            await reader.waitForInteraction(false);
             explainTest('After the up key, the currently selected menu item is ' + (i - 1));
             expect(await reader.getSelectedMenuIndex(menu)).to.be(i - 1);
         }
