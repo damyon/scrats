@@ -669,6 +669,7 @@
             let loaded = async function() {
                 await this.waitForInteraction(true);
                 await this.waitForInteraction(true);
+                await this.waitForInteraction(true);
                 this.waitForPage().then(() => {
                     resolve();
                 });
