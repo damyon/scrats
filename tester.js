@@ -37,7 +37,7 @@ exports.run = function(url, features, chrome, verbose, scripts, dataset, timeout
     var chain = Promise.resolve('start');
 
     if (typeof timeout == 'undefined') {
-        timeout = 60000;
+        timeout = MAX_EXECUTION_TIME;
     }
 
     if (typeof url == 'undefined') {
@@ -72,12 +72,11 @@ exports.run = function(url, features, chrome, verbose, scripts, dataset, timeout
                             featureFile = extensionDir + '/feature.js';
         
                         features.forEach((feature, index) => {
-                            // FileSystem.appendFileSync(featureFile, "\nconsole.log('[DEBUG]# Feature file: \"" + feature + "\"[DEBUG]');\n");
                             FileSystem.appendFileSync(featureFile, "\ncontext('Feature file: " + feature + "', function() {\n");
                             FileSystem.appendFileSync(featureFile, FileSystem.readFileSync(feature));
                             FileSystem.appendFileSync(featureFile, "});\n");
                         });
-                        
+
                         return true;
                     }).then(function() {
                         // Copy each preflight script to the extension and append to the manifest.
@@ -90,7 +89,7 @@ exports.run = function(url, features, chrome, verbose, scripts, dataset, timeout
                         // Write the execution dataset to a global variable.
 
                         var setGlobal = 'window.state = ' + JSON.stringify(state) + ';';
-                        setGlobal += 'window.timeout = ' + timeout + ';';
+                        setGlobal += 'window.timeout = ' + timeout + ' - 2000;';
                         setGlobal += 'window.startUrl = "' + url + '";';
 
                         return FileSystemExtra.writeFile(extensionDir + '/dataset.js', setGlobal);
@@ -111,8 +110,8 @@ exports.run = function(url, features, chrome, verbose, scripts, dataset, timeout
 
                         setTimeout(function() {
                             process.kill();
-                            console.log('# Execution time exceeded (' + MAX_EXECUTION_TIME/1000 + ' seconds) - killing process.');
-                        }, MAX_EXECUTION_TIME);
+                            console.log('# Execution time exceeded (' + timeout/1000 + ' seconds) - killing process.');
+                        }, timeout);
 
                         // Handle exit.
                         process.on('close', function(code, signal) {

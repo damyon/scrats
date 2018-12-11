@@ -314,8 +314,10 @@
         for (i = 0; i < tabs.length; i++) {
             tab = tabs[i];
             await reader.focus(tab);
+            await reader.waitForInteraction(true);
             if (manual) {
                 await reader.sendSpecialKey(reader.specialKeys.ENTER);
+                await reader.waitForInteraction();
             }
             
             explainTest('The tab element has the correct role (tab)');
@@ -327,19 +329,20 @@
             
             explainTest('Right key selects the next tab');
             await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+            await reader.waitForInteraction();
             if (manual) {
                 await reader.sendSpecialKey(reader.specialKeys.ENTER);
             }
-            selected = await reader.getAttributeValue(tab, 'aria-selected');
 
             explainTest('Left key selects the previous tab');
             await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+            await reader.waitForInteraction();
             if (manual) {
                 await reader.sendSpecialKey(reader.specialKeys.ENTER);
             }
-            selected = await reader.getAttributeValue(tab, 'aria-selected');
             
             await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+            await reader.waitForInteraction();
             if (manual) {
                 await reader.sendSpecialKey(reader.specialKeys.ENTER);
             }
@@ -534,6 +537,7 @@
         expect(max).to.not.be('');
 
         await reader.focus(wrapper);
+        await reader.waitForInteraction(true);
 
         explainTest('The slider works with end and home keys');
         await reader.sendSpecialKey(reader.specialKeys.END);

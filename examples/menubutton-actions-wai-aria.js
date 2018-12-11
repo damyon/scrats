@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Menu button', function() {
+describe('WAI Aria Menu button actions', function() {
     it('Menu button using actions is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/menu-button/menu-button-actions.html';
@@ -9,5 +8,4 @@ describe('WAI Aria', function() {
 
         await wai.validateMenuButtonActions("popUpButton", "Actions");
     })
-  })
 });

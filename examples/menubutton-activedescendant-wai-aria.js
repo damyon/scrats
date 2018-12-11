@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Menu button', function() {
+describe('WAI Aria Menu button active descendant', function() {
     it('Menu button using active descendant is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/menu-button/menu-button-actions-active-descendant.html';
@@ -9,5 +8,4 @@ describe('WAI Aria', function() {
 
         await wai.validateMenuButtonActiveDescendant("popUpButton", "Actions");
     })
-  })
 });

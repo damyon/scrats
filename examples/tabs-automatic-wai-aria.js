@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Tabs', function() {
+describe('WAI Aria Tabs', function() {
     it('Tabs with automatic activation are accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/tabs/tabs-1/tabs.html',
@@ -16,5 +15,4 @@ describe('WAI Aria', function() {
         explainTest('The page contains a tablist');
         await wai.validateTablist(tablist, false);
     })
-  })
 });

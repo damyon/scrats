@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('2 State Checkbox', function() {
+describe('WAI Aria 2 State Checkbox', function() {
     it('2 State Checkbox is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/checkbox/checkbox-1/checkbox-1.html',
@@ -13,5 +12,4 @@ describe('WAI Aria', function() {
             await wai.validateCheckbox(checkboxList[i]);
         }
     })
-  })
 });

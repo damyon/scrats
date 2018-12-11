@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Link', function() {
+describe('WAI Aria Link', function() {
     it('Link is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/link/link.html',
@@ -18,5 +17,4 @@ describe('WAI Aria', function() {
             await wai.validateLink(links[i]);
         }
     })
-  })
 });

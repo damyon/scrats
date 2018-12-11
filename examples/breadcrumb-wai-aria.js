@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Breadcrumb', function() {
+describe('WAI Aria Breadcrumb', function() {
     it('Breadcrumb is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/breadcrumb/index.html';
@@ -9,6 +8,4 @@ describe('WAI Aria', function() {
 
         await wai.validateBreadcrumb("Breadcrumb");
     })
-  })
 });
-        

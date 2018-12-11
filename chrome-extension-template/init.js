@@ -100,11 +100,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, info) {
                     .on('fail', function(test, err) {
                         logTAP("not ok " + (testNo++) + " - it " + test.title);
                         logTAP(("# " + err).split("\n").join("\n# "));
-                        logTAP("Bail out!");
                         failed++;
-                        chrome.windows.getCurrent(function(win) {
-                            chrome.windows.remove(win.id);
-                        });
                     })
                     .on('end', function() {
                         // Quit browser.

@@ -648,6 +648,7 @@
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyDown', text : key });
         chrome.debugger.sendCommand({ tabId: this.tabId }, 'Input.dispatchKeyEvent', { type: 'keyUp', text : key });
 
+        await this.waitForInteraction();
         complete = new Promise(function(resolve) {
             chrome.debugger.detach({ tabId: this.tabId }, resolve);
         });
@@ -667,6 +668,7 @@
 
         complete = new Promise(function(resolve) {
             let loaded = async function() {
+                await this.waitForInteraction(true);
                 await this.waitForInteraction(true);
                 await this.waitForInteraction(true);
                 await this.waitForInteraction(true);

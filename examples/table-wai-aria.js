@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Table', function() {
+describe('WAI Aria Table', function() {
     it('Table is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/table/table.html',
@@ -16,5 +15,4 @@ describe('WAI Aria', function() {
         explainTest('The page contains a table');
         await wai.validateTable(table);
     })
-  })
 });

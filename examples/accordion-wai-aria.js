@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Accordion', function() {
+describe('WAI Aria Accordion', function() {
     it('Accordion is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/accordion/accordion.html',
@@ -10,5 +9,4 @@ describe('WAI Aria', function() {
         header = await reader.findInPage('splitter', 'Start of Example');
         await wai.validateAccordion(header);
     })
-  })
 });

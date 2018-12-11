@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Alert', function() {
+describe('WAI Aria Alert', function() {
     it('Alert is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/alert/alert.html',
@@ -14,5 +13,4 @@ describe('WAI Aria', function() {
         await reader.doDefault(trigger);
         await done;
     })
-  })
 });

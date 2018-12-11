@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Slider', function() {
+describe('WAI Aria Slider', function() {
     it('Slider is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/slider/slider-1.html',
@@ -20,5 +19,4 @@ describe('WAI Aria', function() {
             await wai.validateSlider(sliders[i], true);
         }
     })
-  })
 });

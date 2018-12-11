@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Mixed State Checkbox', function() {
+describe('WAI Aria Mixed State Checkbox', function() {
     it('Mixed State Checkbox is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/checkbox/checkbox-2/checkbox-2.html',
@@ -14,5 +13,4 @@ describe('WAI Aria', function() {
         await wai.validateMixedCheckbox(groupCheckBox);
         
     })
-  })
 });

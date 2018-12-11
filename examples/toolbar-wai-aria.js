@@ -1,5 +1,4 @@
-describe('WAI Aria', function() {
-  describe('Toolbar', function() {
+describe('WAI Aria Toolbar', function() {
     it('Toolbar is accessible', async function() {
         let wai,
             url = 'https://www.w3.org/TR/wai-aria-practices-1.1/examples/toolbar/toolbar.html',
@@ -16,5 +15,4 @@ describe('WAI Aria', function() {
 
         await wai.validateToolbar(toolbar);
     })
-  })
 });
