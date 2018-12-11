@@ -541,34 +541,42 @@
 
         explainTest('The slider works with end and home keys');
         await reader.sendSpecialKey(reader.specialKeys.END);
+        await reader.waitForInteraction();
         value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
         expect(value).to.be(max);
         await reader.sendSpecialKey(reader.specialKeys.HOME);
+        await reader.waitForInteraction();
         value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
         expect(value).to.be(min);
 
         explainTest('The slider works with right and left keys');
         await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+        await reader.waitForInteraction();
         value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
         expect(value).to.not.be(min);
         await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+        await reader.waitForInteraction();
         value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
         expect(value).to.be(min);
 
         explainTest('The slider works with up and down keys');
         await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+        await reader.waitForInteraction();
         value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
         expect(value).to.not.be(min);
         await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
+        await reader.waitForInteraction();
         value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
         expect(value).to.be(min);
 
         if (checkMulti) {
             explainTest('The slider works with page up and page down keys');
             await reader.sendSpecialKey(reader.specialKeys.PAGE_UP);
+            await reader.waitForInteraction();
             value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
             expect(value).to.not.be(min);
             await reader.sendSpecialKey(reader.specialKeys.PAGE_DOWN);
+            await reader.waitForInteraction();
             value = await reader.getAttributeValue(wrapper, 'aria-valuenow');
             expect(value).to.be(min);
         }
