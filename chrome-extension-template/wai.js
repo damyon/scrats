@@ -34,6 +34,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateRearrangeableListBox = async function(fromlist, tolist, moveto, movefrom) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/listbox/listbox-rearrangeable.html
         let movetobutton, movefrombutton, fromcount, tocount;
 
         await reader.waitForInteraction(true);
@@ -134,6 +136,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateCollapsibleListBox = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/listbox/listbox-collapsible.html
         let options, i, option, activeName, expectedName, hasPopup, expanded, listBox;
 
         explainTest('The listbox is labelled');
@@ -197,6 +201,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateScrollableListBox = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/listbox/listbox-scrollable.html
         let options, i, option, activeName, expectedName;
 
         explainTest('The listbox is labelled');
@@ -255,6 +261,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateDisclosure = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/disclosure/disclosure-img-long-description.html
         let ariaExpanded;
 
         explainTest('The button is labelled');
@@ -296,6 +304,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateTablist = async function(wrapper, manual = false) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/tabs/tabs-1/tabs.html
         let tabs,
             panel,
             tab,
@@ -365,6 +375,74 @@
 
     };
 
+    /**
+     * Check the accessibility of the grid.
+     *
+     * @method validateGridLayout
+     * @param {NodeWrapper} The node that we are testing.
+     * @param {NodeWrapper} The previous focusable node.
+     * @return {Boolean} true on success.
+     */
+    WAI.prototype.validateGridLayout = async function(wrapper, previous) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/grid/LayoutGrids.html
+        let rows,
+            i,
+            j,
+            row,
+            cell,
+            first,
+            current,
+            name;
+
+        explainTest('The grid is visible');
+        expect(reader.isVisible(wrapper)).to.be(true);
+        explainTest('The element has the correct role (grid)');
+        expect(reader.getRole(wrapper)).to.be('grid');
+        explainTest('The grid is labelled');
+        expect(reader.getAccessibleName(wrapper)).to.not.be('');
+
+        explainTest('The grid has rows');
+        rows = await reader.findAll(wrapper, 'row');
+        expect(rows).not.to.be.empty();
+
+        explainTest('Mode focus to the grid');
+        first = await reader.find(wrapper, 'link');
+        await reader.focus(first);
+        await reader.waitForInteraction(true);
+
+        for (i = 0; i < rows.length; i++) {
+            row = rows[i];
+            explainTest('The row has cells');
+            cells = await reader.findAll(row, 'cell');
+
+            if (cells != null) {
+                for (j = 0; j < cells.length; j++) {
+                    cell = cells[j];
+
+                    // Check it has a label.
+                    name = reader.getAccessibleName(cell);
+                    expect(name).to.not.be('');
+
+                    await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
+                    await reader.waitForInteraction(true);
+                }
+            }
+        }
+        name = reader.getAccessibleName(first);
+
+        await reader.sendSpecialKey(reader.specialKeys.HOME);
+        await reader.waitForInteraction(true);
+        
+        first = await reader.find(wrapper, 'link');
+        expect(reader.isFocused(first)).to.be(true);
+
+        await reader.sendSpecialKey(reader.specialKeys.END);
+        await reader.waitForInteraction(true);
+        
+        first = await reader.find(wrapper, 'link');
+        expect(reader.isFocused(first)).to.be(false);
+    };
 
     /**
      * Check the accessibility of the table.
@@ -374,6 +452,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateTable = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/table/table.html
         let rows,
             columns,
             rowheaders,
@@ -442,6 +522,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateToolbar = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/toolbar/toolbar.html
         let buttons, button, previous, tabIndex, hasPopup, menu, subItems;
 
         explainTest('The toolbar is visible');
@@ -496,6 +578,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateLink = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/link/link.html
         explainTest('The link is visible');
         expect(reader.isVisible(wrapper)).to.be(true);
         explainTest('The element has the correct role (link)');
@@ -515,6 +599,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateSlider = async function(wrapper, checkMulti = false) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/slider/slider-1.html
         let value, min, max;
 
         await reader.waitForInteraction(true);
@@ -590,6 +676,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateFeed = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/feed/feedDisplay.html
         let articles, i, article, size, position, firstIndex, secondIndex;
 
         explainTest('The feed is visible');
@@ -647,6 +735,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateMixedCheckbox = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/checkbox/checkbox-2/checkbox-2.html
         let controls, allChecked, i, checked;
 
         explainTest('The checkbox is labelled');
@@ -723,6 +813,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateCheckbox = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/checkbox/checkbox-1/checkbox-1.html
         let checked = false,
             toggleChecked = false;
 
@@ -759,6 +851,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateButton = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/button/button.html
         explainTest('The button is visible');
         expect(reader.isVisible(wrapper)).to.be(true);
         explainTest('The button has the correct role (button)');
@@ -776,6 +870,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateToggleButton = async function(wrapper) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/button/button.html
         let pressed = false, togglePressed = false;
 
         explainTest('The button is visible');
@@ -801,7 +897,7 @@
      * Check labels and keyboard navigation for a menu of links.
      * Throws an error if the validation fails.
      *
-     * @method validateMenuButtonLinks
+     * @method validateMenuBar
      * @param {String} role The expected role of the menu button to validate.
      * @param {String} label The expected label text of the menu button to validate.
      * @param {Boolean} search Check searching of menu entries.
@@ -1651,6 +1747,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateModalDialog = async function(triggerLabel, cancelLabel) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/dialog-modal/dialog.html
         let trigger, done, modal, cancel;
 
         explainTest('Open the dialog');
@@ -1697,6 +1795,8 @@
      * @return {Boolean} true on success.
      */
     WAI.prototype.validateAlertDialog = async function(triggerLabel, cancelLabel) {
+        // Example
+        // https://www.w3.org/TR/wai-aria-practices-1.1/examples/dialog-modal/alertdialog.html
         let trigger, done, modal, cancel;
 
         explainTest('Open the dialog');
