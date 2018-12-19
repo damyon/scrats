@@ -380,10 +380,9 @@
      *
      * @method validateGridLayout
      * @param {NodeWrapper} The node that we are testing.
-     * @param {NodeWrapper} The previous focusable node.
      * @return {Boolean} true on success.
      */
-    WAI.prototype.validateGridLayout = async function(wrapper, previous) {
+    WAI.prototype.validateGridLayout = async function(wrapper) {
         // Example
         // https://www.w3.org/TR/wai-aria-practices-1.1/examples/grid/LayoutGrids.html
         let rows,
@@ -393,7 +392,8 @@
             cell,
             first,
             current,
-            name;
+            name,
+            count;
 
         explainTest('The grid is visible');
         expect(reader.isVisible(wrapper)).to.be(true);
@@ -409,8 +409,9 @@
         explainTest('Mode focus to the grid');
         first = await reader.find(wrapper, 'link');
         await reader.focus(first);
-        await reader.waitForInteraction(true);
+        await reader.waitForInteraction();
 
+        count = 0;
         for (i = 0; i < rows.length; i++) {
             row = rows[i];
             explainTest('The row has cells');
@@ -425,20 +426,25 @@
                     expect(name).to.not.be('');
 
                     await reader.sendSpecialKey(reader.specialKeys.RIGHT_ARROW);
-                    await reader.waitForInteraction(true);
+                    await reader.waitForInteraction();
+                    count++;
                 }
             }
         }
-        name = reader.getAccessibleName(first);
+        while (count > 0) {
+            await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+            await reader.waitForInteraction();
+            count--;
+        }
 
         await reader.sendSpecialKey(reader.specialKeys.HOME);
-        await reader.waitForInteraction(true);
+        await reader.waitForInteraction();
         
         first = await reader.find(wrapper, 'link');
         expect(reader.isFocused(first)).to.be(true);
 
         await reader.sendSpecialKey(reader.specialKeys.END);
-        await reader.waitForInteraction(true);
+        await reader.waitForInteraction();
         
         first = await reader.find(wrapper, 'link');
         expect(reader.isFocused(first)).to.be(false);
