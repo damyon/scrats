@@ -1152,7 +1152,6 @@
 
         for (i = 0; i < menuItems.length; i++) {
             menuItem = menuItems[i];
-            //expect(this.getRole(menuItem)).to.be("menuItem");
             expect(this.getAccessibleName(menuItem)).not.to.be('');
             expect(this.isFocusable(menuItem)).to.be(true);
             if (this.isFocused(menuItem)) {

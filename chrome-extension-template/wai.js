@@ -380,9 +380,10 @@
      *
      * @method validateGridLayout
      * @param {NodeWrapper} The node that we are testing.
+     * @param {FirstHasLink} The first cell in the grid contains a focusable link
      * @return {Boolean} true on success.
      */
-    WAI.prototype.validateGridLayout = async function(wrapper) {
+    WAI.prototype.validateGridLayout = async function(wrapper, firstRole = 'link') {
         // Example
         // https://www.w3.org/TR/wai-aria-practices-1.1/examples/grid/LayoutGrids.html
         let rows,
@@ -393,7 +394,8 @@
             first,
             current,
             name,
-            count;
+            count,
+            rowCount;
 
         explainTest('The grid is visible');
         expect(reader.isVisible(wrapper)).to.be(true);
@@ -406,15 +408,15 @@
         rows = await reader.findAll(wrapper, 'row');
         expect(rows).not.to.be.empty();
 
-        explainTest('Mode focus to the grid');
-        first = await reader.find(wrapper, 'link');
+        explainTest('Move focus to the grid');
+        first = await reader.find(wrapper, firstRole);
         await reader.focus(first);
         await reader.waitForInteraction();
 
         count = 0;
+        rowCount = 0;
         for (i = 0; i < rows.length; i++) {
             row = rows[i];
-            explainTest('The row has cells');
             cells = await reader.findAll(row, 'cell');
 
             if (cells != null) {
@@ -429,24 +431,29 @@
                     await reader.waitForInteraction();
                     count++;
                 }
+                rowCount++;
             }
-        }
-        while (count > 0) {
-            await reader.sendSpecialKey(reader.specialKeys.LEFT_ARROW);
+            await reader.sendSpecialKey(reader.specialKeys.DOWN_ARROW);
             await reader.waitForInteraction();
-            count--;
+            await reader.sendSpecialKey(reader.specialKeys.HOME);
+            await reader.waitForInteraction();
+        }
+        while (rowCount > 1) {
+            await reader.sendSpecialKey(reader.specialKeys.UP_ARROW);
+            await reader.waitForInteraction();
+            rowCount--;
         }
 
         await reader.sendSpecialKey(reader.specialKeys.HOME);
         await reader.waitForInteraction();
         
-        first = await reader.find(wrapper, 'link');
+        first = await reader.find(wrapper, firstRole);
         expect(reader.isFocused(first)).to.be(true);
 
         await reader.sendSpecialKey(reader.specialKeys.END);
         await reader.waitForInteraction();
         
-        first = await reader.find(wrapper, 'link');
+        first = await reader.find(wrapper, firstRole);
         expect(reader.isFocused(first)).to.be(false);
     };
 
